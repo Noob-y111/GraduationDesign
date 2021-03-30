@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.viewpager2.widget.ViewPager2 xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:id="@+id/banner_container"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    android:layout_gravity="center_horizontal"
+    android:background="@color/main_pink">
+
+</androidx.viewpager2.widget.ViewPager2>

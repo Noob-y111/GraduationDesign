@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?attr/actionBarSize"
+    android:clickable="true"
+    android:focusable="true"
+    app:layout_scrollFlags="scroll"
+    app:titleTextColor="@color/white"
+    android:background="@color/main_pink"
+    android:fitsSystemWindows="true">
+
+    <TextView
+        android:id="@+id/tv_search"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@drawable/shape_edit"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:hint="@string/search_hint"
+        android:textColorHint="@color/grayTextColor" />
+
+</androidx.appcompat.widget.Toolbar>

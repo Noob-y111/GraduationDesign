@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/musicClubFragment"
+        android:title="@string/item_music"
+        android:icon="@drawable/music"/>
+
+    <item
+        android:id="@+id/exploreFragment"
+        android:title="@string/item_explore"
+        android:icon="@drawable/explore"/>
+
+    <item
+        android:id="@+id/localFragment"
+        android:title="@string/item_local"
+        android:icon="@drawable/local"/>
+
+</menu>
