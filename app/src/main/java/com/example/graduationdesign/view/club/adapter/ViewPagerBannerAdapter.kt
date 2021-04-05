@@ -1,4 +1,4 @@
-package com.example.graduationdesign.recyclerview_adapter
+package com.example.graduationdesign.view.club.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.ImageOfBanner
-import kotlin.concurrent.thread
 
 class ViewPagerBannerAdapter :
     ListAdapter<ImageOfBanner, ViewPagerBannerAdapter.ImageHolder>(DiffUtils) {
@@ -51,6 +50,7 @@ class ViewPagerBannerAdapter :
         }
         Glide.with(holder.itemView)
             .load(currentList[index].imageUrl)
+            .error(R.drawable.shimmer_bg)
             .placeholder(R.drawable.shimmer_bg).into(image)
 //        thread {
 //            val bitmap = Glide.with(holder.itemView)

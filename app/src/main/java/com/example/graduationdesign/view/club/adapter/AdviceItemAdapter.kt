@@ -1,4 +1,4 @@
-package com.example.graduationdesign.recyclerview_adapter
+package com.example.graduationdesign.view.club.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +41,7 @@ class AdviceItemAdapter : ListAdapter<ImageAndText, AdviceItemAdapter.Holder>(Di
                 val item = currentList[position]
                 Glide.with(this)
                     .load(item.imageUrl)
+                    .error(R.drawable.shimmer_bg)
                     .placeholder(R.drawable.shimmer_bg)
                     .into(image)
                 text.text = item.text

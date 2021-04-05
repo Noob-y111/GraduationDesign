@@ -26,7 +26,17 @@
     <string name="daily_recommend">每日推荐</string>
     <string name="label_ranking">排行榜</string>
     <string name="label_playlist">歌单</string>
+    <string name="label_new_album">新碟上架</string>
     <string name="advice_title_recommend_playlist">推荐歌单</string>
     <string name="advice_button">查看更多</string>
+    <string name="advice_button_play">播放全部</string>
     <string name="advice_title_newest_album">最新专辑</string>
+    <string name="advice_title_new_song">推荐新音乐</string>
+    <string name="info_title_square">歌单广场</string>
+    <string name="info_ranking">排行榜</string>
+    <string name="info_ranking_official_title">官方排行</string>
+    <string name="info_ranking_other_title">其他排行</string>
+    <string name="info_loading">正在加载…</string>
+    <string name="info_error">网络错误，点击重试</string>
+    <string name="info_complete">数据加载完成</string>
 </resources>

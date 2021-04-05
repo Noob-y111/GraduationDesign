@@ -24,9 +24,11 @@ abstract class BaseFragment: Fragment() {
     }
 
     private fun transparentActionBar() {
-        toolbar?.fitsSystemWindows = true
-        requireActivity().apply {
-            (this as AppCompatActivity).setSupportActionBar(toolbar)
+        toolbar?.let {
+            it.fitsSystemWindows = true
+            requireActivity().apply {
+                (this as AppCompatActivity).setSupportActionBar(it)
+            }
         }
 
         val window = requireActivity().window
@@ -46,6 +48,6 @@ abstract class BaseFragment: Fragment() {
     }
 
     abstract fun getTitle(): String
-    abstract fun getToolbarView(): Toolbar
+    abstract fun getToolbarView(): Toolbar?
 
 }

@@ -12,6 +12,7 @@
     <color name="main_pink">#f5587b</color>
     <color name="grey">#888</color>
     <color name="light_grey">#aaa</color>
+    <color name="half_translate_light_grey">#55aaaaaa</color>
 
     <color name="toolBarTextColor">#fff</color>
     <color name="textColor">#fff</color>
@@ -19,7 +20,7 @@
     <color name="blackTextColor">#000</color>
     <color name="blackGrayTextColor">#333</color>
     <color name="grayTextColor">#aaa</color>
-    <color name="tabGrayTextColor">#aaa</color>
+    <color name="tabGrayTextColor">#ddd</color>
     <color name="pressedColor">#eee</color>
     <color name="detail_text_color">#ddd</color>
     <color name="color_888">#888888</color>

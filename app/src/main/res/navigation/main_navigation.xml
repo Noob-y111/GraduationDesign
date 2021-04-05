@@ -21,5 +21,90 @@
         android:id="@+id/musicClubFragment"
         android:name="com.example.graduationdesign.view.club.MusicClubFragment"
         android:label="@string/item_music"
-        tools:layout="@layout/music_club_fragment" />
+        tools:layout="@layout/music_club_fragment" >
+        <action
+            android:id="@+id/action_musicClubFragment_to_songListFragment"
+            app:destination="@id/songListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_playlistFragment"
+            app:destination="@id/playlistFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_rankingListFragment"
+            app:destination="@id/rankingListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_newAlbumFragment"
+            app:destination="@id/newAlbumFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/songListFragment"
+        android:name="com.example.graduationdesign.view.songlist.SongListFragment"
+        android:label="SongListFragment"
+        tools:layout="@layout/song_list_fragment"/>
+
+    <fragment
+        android:id="@+id/playlistFragment"
+        android:name="com.example.graduationdesign.view.playlist.PlaylistFragment"
+        android:label="PlaylistFragment"
+        tools:layout="@layout/playlist_fragment">
+        <action
+            android:id="@+id/action_playlistFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/rankingListFragment"
+        android:name="com.example.graduationdesign.view.rankinglist.RankingListFragment"
+        android:label="ranking_list_fragment"
+        tools:layout="@layout/ranking_list_fragment" >
+        <action
+            android:id="@+id/action_rankingListFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/newAlbumFragment"
+        android:name="com.example.graduationdesign.view.newalbum.NewAlbumFragment"
+        android:label="new_album_fragment"
+        tools:layout="@layout/new_album_fragment" >
+        <action
+            android:id="@+id/action_newAlbumFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/reuseListFragment"
+        android:name="com.example.graduationdesign.view.reuse.ReuseListFragment"
+        android:label="ReuseListFragment"
+        tools:layout="@layout/reuse_list_fragment"/>
+
+
 </navigation>

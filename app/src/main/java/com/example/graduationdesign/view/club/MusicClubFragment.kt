@@ -1,6 +1,5 @@
 package com.example.graduationdesign.view.club
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,17 +8,21 @@ import android.widget.CheckBox
 import android.widget.LinearLayout
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import androidx.core.view.children
 import androidx.core.view.get
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseFragment
 import com.example.graduationdesign.databinding.MusicClubFragmentBinding
-import com.example.graduationdesign.recyclerview_adapter.AdviceItemAdapter
-import com.example.graduationdesign.recyclerview_adapter.MusicClubRecyclerviewAdapter
-import com.example.graduationdesign.recyclerview_adapter.ViewPagerBannerAdapter
+import com.example.graduationdesign.view.club.adapter.AdviceItemAdapter
+import com.example.graduationdesign.view.club.adapter.AdviceSongItemAdapter
+import com.example.graduationdesign.view.club.adapter.MusicClubRecyclerviewAdapter
+import com.example.graduationdesign.view.club.adapter.ViewPagerBannerAdapter
 import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.example.imitationqqmusic.model.tools.DpPxUtils
 import com.example.imitationqqmusic.model.tools.ScreenUtils
@@ -44,11 +47,44 @@ class MusicClubFragment : BaseFragment() {
         searchBoxWidth(binding.musicClubToolbar.tvSearch)
         initViewPager2()
         initRecyclerView()
+        initSwipeRefreshLayout()
+        initOnClick()
+    }
+
+    private fun navigate(action: Int){
+        Navigation.findNavController(requireActivity(), R.id.main_container)
+            .navigate(action)
+    }
+
+    private fun initOnClick() {
+        binding.linearLabelDaily.setOnClickListener {
+            navigate(R.id.action_musicClubFragment_to_songListFragment)
+        }
+
+        binding.linearLabelRanking.setOnClickListener {
+            navigate(R.id.action_musicClubFragment_to_rankingListFragment)
+        }
+
+        binding.linearLabelPlaylist.setOnClickListener {
+            navigate(R.id.action_musicClubFragment_to_playlistFragment)
+        }
+
+        binding.linearLabelNewAlbum.setOnClickListener {
+            navigate(R.id.action_musicClubFragment_to_newAlbumFragment)
+        }
+    }
+
+    private fun initSwipeRefreshLayout() {
+        binding.swipeLayout.isRefreshing = false
+        binding.swipeLayout.isEnabled = false
     }
 
     private fun initRecyclerView() {
         val adviceItemAdapter = AdviceItemAdapter()
         val adviceItemAdapter2 = AdviceItemAdapter()
+        val adviceSongItemAdapter = AdviceSongItemAdapter(ScreenUtils.getWidth(requireActivity()))
+
+
         binding.musicClubRecyclerview.apply {
             layoutManager = LinearLayoutManager(requireContext())
             isNestedScrollingEnabled = false
@@ -60,26 +96,17 @@ class MusicClubFragment : BaseFragment() {
                 ) {
                     when (position) {
                         0 -> {
-                            recyclerview.apply {
-                                layoutManager = LinearLayoutManager(
-                                    requireContext(),
-                                    RecyclerView.HORIZONTAL,
-                                    false
-                                )
-                                adapter = adviceItemAdapter
-                            }
+                            initSubRecyclerView(recyclerview).adapter = adviceItemAdapter
                             viewModel.getRecommendPlaylist()
                         }
 
                         1 -> {
-                            recyclerview.apply {
-                                layoutManager = LinearLayoutManager(
-                                    requireContext(),
-                                    RecyclerView.HORIZONTAL,
-                                    false
-                                )
-                                adapter = adviceItemAdapter2
-                            }
+                            initSubRecyclerView(recyclerview).adapter = adviceSongItemAdapter
+                            viewModel.getRecommendNewSong()
+                        }
+
+                        2 -> {
+                            initSubRecyclerView(recyclerview).adapter = adviceItemAdapter2
                             viewModel.getNewestAlbum()
                         }
                     }
@@ -95,6 +122,22 @@ class MusicClubFragment : BaseFragment() {
         viewModel.adviceNewestAlbums.observe(viewLifecycleOwner, {
             adviceItemAdapter2.submitList(it)
         })
+
+        viewModel.adviceNewSong.observe(viewLifecycleOwner, {
+            adviceSongItemAdapter.submitList(it)
+        })
+    }
+
+    private fun initSubRecyclerView(
+        recyclerView: RecyclerView
+    ): RecyclerView {
+        return recyclerView.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                RecyclerView.HORIZONTAL,
+                false
+            )
+        }
     }
 
     private fun initViewPager2() {
@@ -187,7 +230,7 @@ class MusicClubFragment : BaseFragment() {
         return getString(R.string.item_music)
     }
 
-    override fun getToolbarView(): Toolbar {
+    override fun getToolbarView(): Toolbar? {
         return binding.musicClubToolbar.toolbar
     }
 

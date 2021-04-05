@@ -23,7 +23,7 @@ import java.util.Map;
 @Navigator.Name("fixFragment")
 public class FixFragmentNavigator extends FragmentNavigator {
 
-    private final String TAG = "ReLoadFragmentNavictor";
+    private final String TAG = "ReLoadFragmentNavigator";
     private final Context mContext;
     private final FragmentManager mFragmentManager;
     private final int mContainerId;

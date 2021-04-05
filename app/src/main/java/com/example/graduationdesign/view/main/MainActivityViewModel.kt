@@ -50,8 +50,35 @@ class MainActivityViewModel : ViewModel() {
     private val _toastString = MutableLiveData<String>()
     val toastString: LiveData<String> = _toastString
 
-    fun showMessage(message: String) {
+    private val _hideBottomNavigationView = MutableLiveData(false)
+    val hideBottomNavigationView: LiveData<Boolean> = _hideBottomNavigationView
+
+    private fun showMessage(message: String) {
         _toastString.postValue(message)
+    }
+
+    private fun setHideBottomNavigationView(boolean: Boolean){
+        _hideBottomNavigationView.postValue(boolean)
+    }
+
+    fun shouldHideView(id: Int){
+        when(id){
+            in intArrayOf(R.id.musicClubFragment, R.id.exploreFragment, R.id.localFragment) -> {
+                if (_hideBottomNavigationView.value == false){
+                    return
+                }else{
+                    setHideBottomNavigationView(false)
+                }
+            }
+            else -> {
+                println("=======================导航变化:")
+                if (_hideBottomNavigationView.value == true){
+                    return
+                }else{
+                    setHideBottomNavigationView(true)
+                }
+            }
+        }
     }
 
     fun getUser(bundle: Bundle) {
@@ -84,6 +111,10 @@ class MainActivityViewModel : ViewModel() {
     private val _adviceNewestAlbums =
         MutableLiveData<ArrayList<ImageAndText>>()
     val adviceNewestAlbums: LiveData<ArrayList<ImageAndText>> = _adviceNewestAlbums
+
+    private val _adviceNewSong =
+        MutableLiveData<ArrayList<ArrayList<ImageAndText>>>()
+    val adviceNewSong: LiveData<ArrayList<ArrayList<ImageAndText>>> = _adviceNewSong
 
     private val _currentBannerIndex = MutableLiveData<Int>()
     val currentBannerIndex: LiveData<Int> = _currentBannerIndex
@@ -121,7 +152,7 @@ class MainActivityViewModel : ViewModel() {
         model = InternetModel(context)
     }
 
-    fun startScroll() {
+    private fun startScroll() {
         if (!timerIsStarted) {
             timerIsStarted = true
             timer?.schedule(timerTask, 5000, 5000)
@@ -148,6 +179,10 @@ class MainActivityViewModel : ViewModel() {
 
     private fun submitListOfNewestAlbums(list: ArrayList<ImageAndText>) {
         _adviceNewestAlbums.postValue(list)
+    }
+
+    private fun submitListOfSongItem(list: ArrayList<ArrayList<ImageAndText>>) {
+        _adviceNewSong.postValue(list)
     }
 
 //    private fun judgeBannerIndex(position: Int): Int{
@@ -202,7 +237,6 @@ class MainActivityViewModel : ViewModel() {
                                     val text = album.getString("name")
                                     val id = album.getString("id")
                                     list.add(ImageAndText(imageUrl, text, id, TypeOfMusicEnum.SONG))
-                                    println("================list[i]: ${list[i]}")
                                     if (i >= 5) break
                                 }
                                 submitListOfNewestAlbums(list)
@@ -217,6 +251,14 @@ class MainActivityViewModel : ViewModel() {
             }
         }, {
             it?.let { it1 -> showMessage(it1) }
+        })
+    }
+
+    fun getRecommendNewSong() {
+        model?.getRecommendNewSong({
+            submitListOfSongItem(this)
+        }, {
+            showMessage(it!!)
         })
     }
 
@@ -244,7 +286,6 @@ class MainActivityViewModel : ViewModel() {
                                                     TypeOfMusicEnum.PLAYLIST
                                                 )
                                             )
-                                            println("================playlist[i]: ${playlist[i]}")
                                             if (i >= 5) break
                                         }
                                         submitListOfPlaylist(playlist)

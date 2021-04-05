@@ -15,5 +15,9 @@ class ApiTools {
         fun recommendedSongsDaily() = "$baseUrl/recommend/songs?timestamp=${System.currentTimeMillis()}"
         fun recommendedPlaylistDaily() = "$baseUrl/recommend/resource?timestamp=${System.currentTimeMillis()}"
         fun getNewestAlbum() = "$baseUrl/album/newest?timestamp=${System.currentTimeMillis()}"
+
+        fun getAlbumDetailById() = "$baseUrl/album?timestamp=${System.currentTimeMillis()}"
+        fun getPlaylistDetailById() = "$baseUrl/playlist/detail?timestamp=${System.currentTimeMillis()}"
+        fun getPlaylistByTag() = "$baseUrl/top/playlist?limit=30&timestamp=${System.currentTimeMillis()}"
     }
 }

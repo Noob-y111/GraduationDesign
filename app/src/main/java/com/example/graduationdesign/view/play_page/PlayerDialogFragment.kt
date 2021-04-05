@@ -15,8 +15,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseDialogFragment
+import com.example.graduationdesign.base.BlurBitmap
 import com.example.graduationdesign.databinding.PlayerFragmentBinding
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -51,6 +53,7 @@ class PlayerDialogFragment : BaseDialogFragment() {
         viewModel.imageBitmap.observe(viewLifecycleOwner, Observer {
             Blurry.with(requireContext())
                 .radius(10)
+                .sampling(10)
                 .async()
                 .from(it)
                 .into(binding.playerBg)

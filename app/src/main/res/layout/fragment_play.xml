@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.play_page.PlayFragment" >
+    tools:context=".view.play_page.PlayFragment"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/image_container"

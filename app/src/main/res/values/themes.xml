@@ -34,4 +34,9 @@
     <style name="edit_style" parent="Theme.MaterialComponents.Light">
         <item name="colorControlActivated">@color/main_pink</item>
     </style>
+
+    <style name="TranslucentTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
 </resources>

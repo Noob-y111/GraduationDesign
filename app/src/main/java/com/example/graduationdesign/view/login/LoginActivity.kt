@@ -59,6 +59,7 @@ class LoginActivity : BaseActivity() {
                     it.putExtra("user", this)
                 }
             })
+            finish()
         })
 
 //        viewModel.dialogIsCancelable.observe(this, {
@@ -85,7 +86,7 @@ class LoginActivity : BaseActivity() {
             ScreenUtils.getWidth(this) - DpPxUtils.dp2Px(this, 40f)
         TabLayoutMediator(binding.loginTabLayout, binding.loginVp2) { tab: TabLayout.Tab, i: Int ->
             when (i) {
-                1 -> tab.text = "验证码"
+                1 -> tab.text = "网易邮箱"
                 else -> tab.text = "账号密码"
             }
         }.attach()
