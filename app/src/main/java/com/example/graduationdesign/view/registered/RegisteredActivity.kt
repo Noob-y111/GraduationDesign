@@ -66,7 +66,6 @@ class RegisteredActivity : BaseActivity() {
         //LiveData Observe
         viewModel.tvGetCodeEnable.observe(this, {
             binding.btnGetCode.isEnabled = it
-            println("================binding.btnGetCode.isEnabled: ${binding.btnGetCode.isEnabled}")
         })
 
         viewModel.errorMessage.observe(this, {
@@ -122,7 +121,6 @@ class RegisteredActivity : BaseActivity() {
                 }
             }
         }
-
         override fun afterTextChanged(s: Editable?) {}
 
     }

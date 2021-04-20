@@ -9,7 +9,9 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import cn.leancloud.AVUser
+import com.example.graduationdesign.R
 import com.example.graduationdesign.view.login.LoginActivity
+import com.example.graduationdesign.view.login.LoginActivityViewModel
 import com.example.graduationdesign.view.main.MainActivity
 
 class LaunchActivity : AppCompatActivity() {
@@ -20,21 +22,17 @@ class LaunchActivity : AppCompatActivity() {
     }
 
     private val r = Runnable {
-//        val currentUser = AVUser.getCurrentUser()
-//        if (currentUser == null){
-//            startActivity(Intent(this, LoginActivity::class.java))
-//            println("=========================当前没有用户登录")
-//        }else{
-//            println("================当前登录用户为: ${currentUser.username}")
-//            startActivity(Intent(this, MainActivity::class.java))
-//        }
         startActivity(Intent(this, LoginActivity::class.java))
+        overridePendingTransition(R.anim.detail_dialog_enter, R.anim.keep_out)
         finish()
     }
 
     private fun getPermissions() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M
-            && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(
@@ -54,7 +52,11 @@ class LaunchActivity : AppCompatActivity() {
         permissions: Array<String?>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        super.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults
+        )
         if (requestCode == 100) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Handler().postDelayed(r, 2000)

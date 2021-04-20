@@ -44,14 +44,14 @@ class MusicClubFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = MainActivityViewModel.newInstance(requireActivity())
         viewModel.setDataModel(requireContext())
-        searchBoxWidth(binding.musicClubToolbar.tvSearch)
+        searchBoxWidth(binding.musicClubToolbar.tvSearch, R.id.action_musicClubFragment_to_searchFragment)
         initViewPager2()
         initRecyclerView()
         initSwipeRefreshLayout()
         initOnClick()
     }
 
-    private fun navigate(action: Int){
+    private fun navigate(action: Int) {
         Navigation.findNavController(requireActivity(), R.id.main_container)
             .navigate(action)
     }
@@ -97,17 +97,20 @@ class MusicClubFragment : BaseFragment() {
                     when (position) {
                         0 -> {
                             initSubRecyclerView(recyclerview).adapter = adviceItemAdapter
-                            viewModel.getRecommendPlaylist()
+                            if (viewModel.adviceImageList.value == null)
+                                viewModel.getRecommendPlaylist()
                         }
 
                         1 -> {
                             initSubRecyclerView(recyclerview).adapter = adviceSongItemAdapter
-                            viewModel.getRecommendNewSong()
+                            if (viewModel.adviceNewSong.value == null)
+                                viewModel.getRecommendNewSong()
                         }
 
                         2 -> {
                             initSubRecyclerView(recyclerview).adapter = adviceItemAdapter2
-                            viewModel.getNewestAlbum()
+                            if (viewModel.adviceNewestAlbums.value == null)
+                                viewModel.getNewestAlbum()
                         }
                     }
                 }
@@ -152,19 +155,21 @@ class MusicClubFragment : BaseFragment() {
             ).toInt()
 
         println("=======================adapter set success:")
-        binding.bannerViewpager2.registerOnPageChangeCallback(object :
-            ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                viewModel.setPosition(position)
-                setIndicatorCheckedIndex(position - 1)
-            }
 
-            override fun onPageScrollStateChanged(state: Int) {
-                super.onPageScrollStateChanged(state)
-                viewModel.dragEnded(state)
-            }
-        })
+        binding.bannerViewpager2.registerOnPageChangeCallback(
+            object :
+                ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                    viewModel.setPosition(position)
+                    setIndicatorCheckedIndex(position - 1)
+                }
+
+                override fun onPageScrollStateChanged(state: Int) {
+                    super.onPageScrollStateChanged(state)
+                    viewModel.dragEnded(state)
+                }
+            })
 
         viewModel.bannerImageList.observe(viewLifecycleOwner, {
             if (it.size == 0) return@observe else {
@@ -187,7 +192,6 @@ class MusicClubFragment : BaseFragment() {
 
         if (viewModel.bannerImageList.value?.size == 0)
             viewModel.getBannerList()
-//        viewModel.getBannerList()
     }
 
     private fun setIndicatorCheckedIndex(index: Int) {
@@ -205,15 +209,15 @@ class MusicClubFragment : BaseFragment() {
                 it.buttonDrawable = null
                 it.background = ContextCompat.getDrawable(requireContext(), R.drawable.indicator)
             }
-
             val layoutParameter =
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT).also {
-                    it.height = DpPxUtils.dp2Px(requireContext(), 7f)
-                    it.width = DpPxUtils.dp2Px(requireContext(), 7f)
-                    it.weight = 1f
-                    it.leftMargin = DpPxUtils.dp2Px(requireContext(), 3f)
-                    it.rightMargin = DpPxUtils.dp2Px(requireContext(), 3f)
-                }
+                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT)
+                    .also {
+                        it.height = DpPxUtils.dp2Px(requireContext(), 7f)
+                        it.width = DpPxUtils.dp2Px(requireContext(), 7f)
+                        it.weight = 1f
+                        it.leftMargin = DpPxUtils.dp2Px(requireContext(), 3f)
+                        it.rightMargin = DpPxUtils.dp2Px(requireContext(), 3f)
+                    }
             binding.linearIndicatorContainer.addView(indicators, layoutParameter)
         }
     }

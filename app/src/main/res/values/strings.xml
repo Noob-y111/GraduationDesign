@@ -39,4 +39,13 @@
     <string name="info_loading">正在加载…</string>
     <string name="info_error">网络错误，点击重试</string>
     <string name="info_complete">数据加载完成</string>
+    <string name="info_search_history">历史记录</string>
+    <string name="info_search_hot">热搜榜</string>
+    <string name="info_search">请输入搜索关键字</string>
+    <string name="default_number">10000</string>
+    <string name="info_similar_mv">相关视频</string>
+    <string name="info_current_list">当前播放列表</string>
+    <string name="info_local_music">本地音乐</string>
+    <string name="info_edit">编辑</string>
+    <string name="info_change_background">更换背景</string>
 </resources>

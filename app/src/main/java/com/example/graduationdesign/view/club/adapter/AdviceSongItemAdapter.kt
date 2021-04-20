@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.ImageAndText
 import com.example.imitationqqmusic.model.tools.DpPxUtils
@@ -58,6 +59,7 @@ class AdviceSongItemAdapter (private val screenWidth: Int):
                         tv_song_name1.text = item.text
                         Glide.with(this)
                             .load(item.imageUrl)
+                            .transition(DrawableTransitionOptions.withCrossFade(300))
                             .error(R.drawable.shimmer_bg)
                             .placeholder(R.drawable.shimmer_bg)
                             .into(album_image1)
@@ -66,6 +68,7 @@ class AdviceSongItemAdapter (private val screenWidth: Int):
                         tv_song_name2.text = item.text
                         Glide.with(this)
                             .load(item.imageUrl)
+                            .transition(DrawableTransitionOptions.withCrossFade(300))
                             .error(R.drawable.shimmer_bg)
                             .placeholder(R.drawable.shimmer_bg)
                             .into(album_image2)
@@ -74,6 +77,7 @@ class AdviceSongItemAdapter (private val screenWidth: Int):
                         tv_song_name3.text = item.text
                         Glide.with(this)
                             .load(item.imageUrl)
+                            .transition(DrawableTransitionOptions.withCrossFade(300))
                             .error(R.drawable.shimmer_bg)
                             .placeholder(R.drawable.shimmer_bg)
                             .into(album_image3)

@@ -34,8 +34,8 @@ class SubFragment(private val tag: Tag, private val playlistViewModel: PlaylistV
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(SubFragmentViewModel::class.java)
         viewModel.getInternetModel(playlistViewModel.getInternetViewModel())
 
@@ -46,14 +46,15 @@ class SubFragment(private val tag: Tag, private val playlistViewModel: PlaylistV
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-                    val enable = (layoutManager as GridLayoutManager).findLastVisibleItemPosition() == (recyclerViewAdapter.currentList.size)
+                    val enable = (layoutManager as GridLayoutManager)
+                        .findLastVisibleItemPosition() == (recyclerViewAdapter.currentList.size)
                     viewModel.pagingLoading(enable, newState)
                 }
             })
         }
 
         viewModel.playlists.observe(viewLifecycleOwner, { list ->
-            recyclerViewAdapter.submitList(list){
+            recyclerViewAdapter.submitList(list) {
                 viewModel.isLoading = false
                 recyclerViewAdapter.state = PlaylistAdapter.FooterState.HIDE
             }
@@ -66,11 +67,6 @@ class SubFragment(private val tag: Tag, private val playlistViewModel: PlaylistV
         if (viewModel.playlists.value == null) {
             viewModel.firstRequest(tag)
         }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
     }
 
 }

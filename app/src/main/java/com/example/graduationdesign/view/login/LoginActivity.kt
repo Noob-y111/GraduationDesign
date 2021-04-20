@@ -72,16 +72,15 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun initViewPager() {
+
         binding.loginVp2.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount() = 2
-
             override fun createFragment(position: Int) = if (position == 1) {
                 EmailFragment()
             } else {
                 AccountFragment()
             }
         }
-
         binding.loginTabLayout.layoutParams.width =
             ScreenUtils.getWidth(this) - DpPxUtils.dp2Px(this, 40f)
         TabLayoutMediator(binding.loginTabLayout, binding.loginVp2) { tab: TabLayout.Tab, i: Int ->

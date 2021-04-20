@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.ImageAndText
 import kotlinx.android.synthetic.main.image_and_text_item.view.*
@@ -27,11 +28,7 @@ class AdviceItemAdapter : ListAdapter<ImageAndText, AdviceItemAdapter.Holder>(Di
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         LayoutInflater.from(parent.context).inflate(R.layout.image_and_text_item, parent, false)
             .also {
-                val holder = Holder(it)
-                holder.itemView.setOnClickListener {
-
-                }
-                return holder
+                return Holder(it)
             }
     }
 
@@ -41,6 +38,7 @@ class AdviceItemAdapter : ListAdapter<ImageAndText, AdviceItemAdapter.Holder>(Di
                 val item = currentList[position]
                 Glide.with(this)
                     .load(item.imageUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
                     .error(R.drawable.shimmer_bg)
                     .placeholder(R.drawable.shimmer_bg)
                     .into(image)

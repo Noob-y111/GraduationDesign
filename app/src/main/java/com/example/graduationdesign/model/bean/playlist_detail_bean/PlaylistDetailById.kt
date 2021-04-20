@@ -21,7 +21,7 @@ data class Creator(
     var backgroundUrl: String,
     @SerializedName("signature")
     var signature: String,
-    @SerializedName("description")
+    @SerializedName("description", alternate = ["detailDescription"])
     var description: String
 )
 

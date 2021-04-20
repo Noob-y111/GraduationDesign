@@ -54,7 +54,7 @@ class LoginActivityViewModel : ViewModel() {
 //        _dialogIsCancelable.postValue(cancelable)
 //    }
 
-    fun showMessage(str: String) {
+    private fun showMessage(str: String) {
         _toastString.value = str
     }
 

@@ -74,7 +74,8 @@ class RankingListFragment : Fragment() {
             binding.rankingListProgress.visibility = View.GONE
         })
 
-        viewModel.getRankingList()
+        if (viewModel.rankingList.value == null)
+            viewModel.getRankingList()
     }
 
 }

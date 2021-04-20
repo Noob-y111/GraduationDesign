@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.example.imitationqqmusic.model.tools.ScreenUtils
 
 abstract class BaseFragment: Fragment() {
@@ -42,9 +43,12 @@ abstract class BaseFragment: Fragment() {
         toolbar?.title = title
     }
 
-    protected fun searchBoxWidth(view: View){
+    protected fun searchBoxWidth(view: View, actionId: Int){
         val width = ScreenUtils.getWidth(requireActivity()) / 5 * 2
         view.layoutParams.width = width
+        view.setOnClickListener {
+            it.findNavController().navigate(actionId)
+        }
     }
 
     abstract fun getTitle(): String

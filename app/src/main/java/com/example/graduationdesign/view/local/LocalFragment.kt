@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseFragment
@@ -31,9 +32,15 @@ class LocalFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = MainActivityViewModel.newInstance(requireActivity())
-        searchBoxWidth(binding.localToolbar.tvSearch)
-
+        searchBoxWidth(binding.localToolbar.tvSearch, R.id.action_localFragment_to_searchFragment)
         initUserLabel()
+        initBehavior()
+    }
+
+    private fun initBehavior(){
+        binding.ivLocal.setOnClickListener {
+            it.findNavController().navigate(R.id.action_localFragment_to_localMusicFragment)
+        }
     }
 
     private fun initUserLabel(){
@@ -45,7 +52,7 @@ class LocalFragment : BaseFragment() {
         })
 
         binding.linearUser.setOnClickListener {
-            viewModel.getInfo()
+            it.findNavController().navigate(R.id.action_localFragment_to_userInfoFragment)
         }
     }
 

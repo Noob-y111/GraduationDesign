@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/search_navigation"
+    app:startDestination="@id/searchHotFragment">
+
+    <fragment
+        android:id="@+id/searchHotFragment"
+        android:name="com.example.graduationdesign.view.search.subFragment.SearchHotFragment"
+        android:label="SearchHotFragment"
+        tools:layout="@layout/layout_search_hot_fragment">
+        <action
+            android:id="@+id/action_searchHotFragment_to_searchResultFragment"
+            app:destination="@id/searchResultFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchResultFragment"
+        android:name="com.example.graduationdesign.view.search.subFragment.SearchResultFragment"
+        android:label="fragment_search_result"
+        tools:layout="@layout/fragment_search_result" />
+
+</navigation>

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.graduationdesign.model.InternetModel
 import com.example.graduationdesign.model.ListType
+import com.example.graduationdesign.model.bean.User
 import com.example.graduationdesign.model.bean.new_album_bean.SingleMonthData
 import com.example.graduationdesign.model.bean.playlist_bean.Playlist
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
@@ -15,6 +16,7 @@ import com.example.graduationdesign.model.bean.song_list_bean.SongBean
 class ReuseListViewModel : ViewModel() {
 
     private var model: InternetModel? = null
+    private var user: User? = null
 
     private val _appbarImage = MutableLiveData<Any>()
     val appbarImage: LiveData<Any> = _appbarImage
@@ -39,6 +41,10 @@ class ReuseListViewModel : ViewModel() {
 
     fun initInternetModel(context: Context) {
         this.model = InternetModel(context)
+    }
+
+    fun setUser(user: User?){
+        this.user = user
     }
 
     private fun refreshView(
@@ -69,14 +75,17 @@ class ReuseListViewModel : ViewModel() {
                 bundle.getParcelable<Playlist>("list_detail")?.let { playlist ->
                     val map = HashMap<String, String>().apply {
                         put("id", playlist.id)
+                        user?.let {
+                            put("cookie", it.cookie!!)
+                        }
                     }
                     model?.getTopListById(map, { list ->
                         refreshView(
                             recyclerList = list.tracks,
-                            appbarImageUrl = playlist.imageUrl,
+                            appbarImageUrl = list.imageUrl,
                             creatorName = list.creator.nickname,
                             labelTitle = playlist.name,
-                            toolbarTitle = "排行榜",
+                            toolbarTitle = "歌单",
                             description = list.description,
                             shouldHideProgress = true
                         )
@@ -90,6 +99,9 @@ class ReuseListViewModel : ViewModel() {
                 bundle.getParcelable<ListDetail>("list_detail")?.let { listInfo ->
                     val map = HashMap<String, String>().apply {
                         put("id", listInfo.id!!)
+                        user?.let {
+                            put("cookie", it.cookie!!)
+                        }
                     }
                     model?.getTopListById(map, { list ->
                         refreshView(
@@ -109,8 +121,13 @@ class ReuseListViewModel : ViewModel() {
 
             ListType.ALBUM_LIST -> {
                 bundle.getParcelable<SingleMonthData>("list_detail")?.let { singleWeekData ->
-                    model?.getAlbumListById(singleWeekData.id, { albumDetail ->
-
+                    val map = HashMap<String, String>().apply {
+                        put("id", singleWeekData.id)
+                        user?.let {
+                            put("cookie", it.cookie!!)
+                        }
+                    }
+                    model?.getAlbumListById(map, { albumDetail ->
                         var artists = ""
                         albumDetail.albumInfo.artists.forEach {
                             artists += it.name
@@ -135,6 +152,34 @@ class ReuseListViewModel : ViewModel() {
 
                     })
                 }
+            }
+
+            ListType.HOME_PLAYLIST_LIST -> {
+                bundle.getString("playlist_id")?.let {
+                    val map = HashMap<String, String>().apply {
+                        put("id", it)
+                        user?.let {
+                            put("cookie", it.cookie!!)
+                        }
+                    }
+                    model?.getTopListById(map, { list ->
+                        refreshView(
+                            recyclerList = list.tracks,
+                            appbarImageUrl = list.imageUrl,
+                            creatorName = list.creator.nickname,
+                            labelTitle = list.name,
+                            toolbarTitle = "歌单",
+                            description = list.description,
+                            shouldHideProgress = true
+                        )
+                    }, {
+
+                    })
+                }
+            }
+
+            ListType.HOME_ALBUM_LIST -> {
+
             }
 
             else -> {

@@ -9,13 +9,43 @@
         android:id="@+id/localFragment"
         android:name="com.example.graduationdesign.view.local.LocalFragment"
         android:label="@string/item_local"
-        tools:layout="@layout/local_fragment" />
+        tools:layout="@layout/local_fragment" >
+        <action
+            android:id="@+id/action_localFragment_to_searchFragment"
+            app:destination="@id/searchFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_localFragment_to_localMusicFragment"
+            app:destination="@id/localMusicFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_localFragment_to_userInfoFragment"
+            app:destination="@id/userInfoFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
 
     <fragment
         android:id="@+id/exploreFragment"
         android:name="com.example.graduationdesign.view.explore.ExploreFragment"
         android:label="@string/item_explore"
-        tools:layout="@layout/explore_fragment" />
+        tools:layout="@layout/explore_fragment" >
+        <action
+            android:id="@+id/action_exploreFragment_to_searchFragment"
+            app:destination="@id/searchFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
 
     <fragment
         android:id="@+id/musicClubFragment"
@@ -46,6 +76,20 @@
         <action
             android:id="@+id/action_musicClubFragment_to_newAlbumFragment"
             app:destination="@id/newAlbumFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_searchFragment"
+            app:destination="@id/searchFragment"
             app:enterAnim="@anim/fragment_in"
             app:exitAnim="@anim/fragment_out"
             app:popEnterAnim="@anim/fragment_pop_in"
@@ -105,6 +149,30 @@
         android:name="com.example.graduationdesign.view.reuse.ReuseListFragment"
         android:label="ReuseListFragment"
         tools:layout="@layout/reuse_list_fragment"/>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.graduationdesign.view.search.SearchFragment"
+        android:label="search_fragment"
+        tools:layout="@layout/search_fragment" />
+    <fragment
+        android:id="@+id/localMusicFragment"
+        android:name="com.example.graduationdesign.view.local_music.LocalMusicFragment"
+        android:label="local_music_fragment"
+        tools:layout="@layout/local_music_fragment" />
+    <fragment
+        android:id="@+id/userInfoFragment"
+        android:name="com.example.graduationdesign.view.userinfo.UserInfoFragment"
+        android:label="UserInfoFragment"
+        tools:layout="@layout/user_info_fragment">
+        <action
+            android:id="@+id/action_userInfoFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
 
 
 </navigation>

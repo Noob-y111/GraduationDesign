@@ -12,8 +12,8 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
-<!--        <item name="android:windowTranslucentStatus">true</item>-->
-<!--        <item name="android:windowFullscreen">true</item>-->
+        <!--        <item name="android:windowTranslucentStatus">true</item>-->
+        <!--        <item name="android:windowFullscreen">true</item>-->
     </style>
 
     <style name="player_dialog_fragment">
@@ -30,7 +30,7 @@
         <item name="android:windowBackground">@drawable/splash_launch</item>
         <item name="android:windowFullscreen">true</item>
     </style>
-    
+
     <style name="edit_style" parent="Theme.MaterialComponents.Light">
         <item name="colorControlActivated">@color/main_pink</item>
     </style>
@@ -38,5 +38,15 @@
     <style name="TranslucentTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="EditTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorControlNormal">@color/tabGrayTextColor</item>
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+    <style name="ThemeOverlay.GraduationDesign.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
+        <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>
 </resources>
