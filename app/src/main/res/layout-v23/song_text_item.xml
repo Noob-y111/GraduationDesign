@@ -29,7 +29,7 @@
         app:layout_constraintStart_toEndOf="@+id/tv_song_order"
         app:layout_constraintTop_toTopOf="@+id/tv_song_order"
         app:layout_constraintBottom_toTopOf="@id/tv_song_artist"
-        android:maxLines="1"/>
+        android:singleLine="true"/>
 
     <TextView
         android:id="@+id/tv_song_artist"

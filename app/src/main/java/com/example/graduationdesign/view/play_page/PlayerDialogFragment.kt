@@ -20,6 +20,7 @@ import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseDialogFragment
 import com.example.graduationdesign.base.BlurBitmap
 import com.example.graduationdesign.databinding.PlayerFragmentBinding
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import jp.wasabeef.blurry.Blurry
@@ -47,7 +48,7 @@ class PlayerDialogFragment : BaseDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         translateStatusBar()
 //        viewModel = ViewModelProvider(this).get(PlayerViewModel::class.java)
-        viewModel = PlayerViewModel.newInstance(this)
+        viewModel = PlayerViewModel.newInstance(requireActivity())
         initFragmentContainer()
 
         viewModel.imageBitmap.observe(viewLifecycleOwner, Observer {
@@ -59,13 +60,8 @@ class PlayerDialogFragment : BaseDialogFragment() {
                 .into(binding.playerBg)
         })
 
-        thread {
-            val bitmap = Glide.with(this)
-                .asBitmap()
-                .load("https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1101422365,3707187101&fm=26&gp=0.jpg")
-                .placeholder(R.drawable.player_bg)
-                .submit().get()
-            viewModel.changeImageBitmap(bitmap)
+        binding.playerToolbar.setNavigationOnClickListener {
+            dismiss()
         }
     }
 

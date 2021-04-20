@@ -1,34 +1,31 @@
 package com.example.graduationdesign.view.main
 
 
-import android.os.Bundle
+import android.app.Service
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.navigation.*
-import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
-import androidx.viewpager.widget.ViewPager
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseActivity
-import com.example.graduationdesign.base.BaseFragment
-import com.example.graduationdesign.base.FixFragmentNavigator
 import com.example.graduationdesign.databinding.ActivityMainBinding
-import com.example.graduationdesign.model.bean.User
+import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.service.MyService
+import com.example.graduationdesign.service.POSITION
+import com.example.graduationdesign.service.SONG_LIST
 import com.example.graduationdesign.tools.ToastUtil
-import com.example.graduationdesign.view.club.MusicClubFragment
-import com.example.graduationdesign.view.explore.ExploreFragment
-import com.example.graduationdesign.view.local.LocalFragment
+import com.example.graduationdesign.view.current_list.CurrentListFragment
+import com.example.graduationdesign.view.main.adapter.MainFooterAdapter
 import com.example.graduationdesign.view.play_page.PlayerDialogFragment
-import com.example.graduationdesign.view.songlist.SongListFragment
-import com.example.imitationqqmusic.model.tools.ScreenUtils
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationView
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : BaseActivity() {
 
@@ -41,13 +38,13 @@ class MainActivity : BaseActivity() {
         viewModel = MainActivityViewModel.newInstance(this)
         initContainer()
 //        searchBoxWidth()
-        binding.mainFooter.clFooter.setOnClickListener {
-            PlayerDialogFragment().show(supportFragmentManager, null)
-        }
+        bindForegroundServiceAndInitFooter()
+
         intent.getBundleExtra("user")?.let {
             viewModel.getUser(it)
         }
 
+        setOnClickListener()
 
         //observe
         viewModel.toastString.observe(this, {
@@ -60,6 +57,94 @@ class MainActivity : BaseActivity() {
             else
                 binding.bottomNavigation.visibility = View.GONE
         })
+    }
+
+    private fun setOnClickListener() {
+        binding.mainFooter.ivFooterPlayPause.setOnClickListener {
+            viewModel.getBinder()?.playOrPause()
+        }
+
+        binding.mainFooter.ivCurrentList.setOnClickListener {
+            CurrentListFragment(CurrentListFragment.ColorTheme.LIGHT).show(supportFragmentManager, null)
+        }
+    }
+
+    private fun bindForegroundServiceAndInitFooter() {
+        val adapter = MainFooterAdapter(supportFragmentManager)
+        binding.mainFooter.pager2Footer.adapter = adapter
+        binding.mainFooter.pager2Footer.registerOnPageChangeCallback(object :
+            ViewPager2.OnPageChangeCallback() {
+
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+//                viewModel.changeCurrentSong(position, ArrayList<SongBean>(adapter.currentList))
+                viewModel.setMainFooterPosition(position)
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                super.onPageScrollStateChanged(state)
+                viewModel.mainFooterDragEnable(state)
+            }
+        })
+
+        Intent(this, MyService::class.java).apply {
+            startService(this)
+            bindService(this, object : ServiceConnection {
+                override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                    val binder = service as MyService.MyBinder
+                    viewModel.setBinder(binder)
+                    val mService = service.service
+
+                    mService.currentSongListAndPosition.observe(this@MainActivity, {
+                        val position = (it[POSITION] as Int) + 1
+//                        if (binding.mainFooter.pager2Footer.currentItem == position)
+//                            return@observe
+                        val list = it[SONG_LIST]
+                        if (list is ArrayList<*>) {
+                            adapter.submitList(it[SONG_LIST] as ArrayList<SongBean>) {
+                                binding.mainFooter.pager2Footer.setCurrentItem(
+                                    position,
+                                    false
+                                )
+                            }
+                        }
+                    })
+
+                    mService.canFooterShow.observe(this@MainActivity, {
+                        if (it){
+                            binding.mainFooter.clFooter.visibility = View.VISIBLE
+                        }else{
+                            binding.mainFooter.clFooter.visibility = View.GONE
+                        }
+                    })
+
+                    mService.progressBarDuration.observe(this@MainActivity, {
+                        binding.mainFooter.musicProgress.max = it
+                    })
+
+                    mService.progressBarPosition.observe(this@MainActivity, {
+                        binding.mainFooter.musicProgress.progress = it
+                    })
+
+                    mService.progressBarBuffer.observe(this@MainActivity, {
+                        binding.mainFooter.musicProgress.secondaryProgress = it
+                    })
+
+                    mService.stopOrResumeMediaPlayer.observe(this@MainActivity, {
+                        if (it){
+                            binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_play)
+                        }else{
+                            binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_pause)
+                        }
+                    })
+                }
+
+                override fun onServiceDisconnected(name: ComponentName?) {
+
+                }
+
+            }, Service.BIND_AUTO_CREATE)
+        }
     }
 
     override fun setToolBarTitle() = ""

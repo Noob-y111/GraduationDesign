@@ -18,7 +18,7 @@ class CircleImageView @JvmOverloads constructor(
     private val mMatrix = Matrix()
     private var mScaleX = 0f
     private var mScaleY = 0f
-    private lateinit var mBitmap: Bitmap
+    private var mBitmap: Bitmap? = null
     private lateinit var mBitmapShader: BitmapShader
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -30,7 +30,6 @@ class CircleImageView @JvmOverloads constructor(
         mBitmapShader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         mMatrix.setScale(mScaleX, mScaleY)
         mBitmapShader.setLocalMatrix(mMatrix)
-
         return mBitmapShader
     }
 
@@ -40,11 +39,11 @@ class CircleImageView @JvmOverloads constructor(
             return
         }
         mBitmap = drawable.toBitmap()
-        val bitmapWidth = mBitmap.width
-        val bitmapHeight = mBitmap.height
+        val bitmapWidth = mBitmap!!.width
+        val bitmapHeight = mBitmap!!.height
         mScaleX = (mRadius * 2.0f) / bitmapWidth
         mScaleY = (mRadius * 2.0f) / bitmapHeight
-        mPaint.shader = setBitmapShader(mBitmap)
+        mPaint.shader = setBitmapShader(mBitmap!!)
         canvas?.drawCircle(mRadius, mRadius, mRadius, mPaint)
     }
 }

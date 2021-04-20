@@ -1,14 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <include
-            android:id="@+id/explore_toolbar"
-            layout="@layout/toolbar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+<!--    <include-->
+<!--        android:id="@+id/explore_toolbar"-->
+<!--        layout="@layout/toolbar"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/explore_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_scrollFlags="scroll"
+        app:titleTextColor="@color/white"
+        android:background="@color/main_pink"
+        android:fitsSystemWindows="true"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/explore_tab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:tabIndicatorHeight="0dp"
+            app:tabIndicatorFullWidth="false"
+            app:tabSelectedTextColor="@color/white"
+            app:tabTextColor="@color/tabGrayTextColor"
+            android:layout_gravity="center"
+            android:background="@null"
+            app:tabMode="scrollable"
+            app:tabTextAppearance="@style/tab_text"/>
+
+    </androidx.appcompat.widget.Toolbar>
+
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/explore_viewpager2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/explore_toolbar"
+        app:layout_constraintVertical_bias="0.0" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

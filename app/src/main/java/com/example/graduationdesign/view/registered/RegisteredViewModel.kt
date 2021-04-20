@@ -39,11 +39,11 @@ class RegisteredViewModel : ViewModel() {
         _btnRegisteredEnabled.postValue(enable)
     }
 
-    fun showMessage(str: String) {
+    private fun showMessage(str: String) {
         _toastString.value = str
     }
 
-    fun setError(str: String) {
+    private fun setError(str: String) {
         _errorMessage.postValue(str)
     }
 

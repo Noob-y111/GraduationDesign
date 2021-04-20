@@ -3,6 +3,8 @@ package com.example.graduationdesign.view.main
 import android.content.Context
 import android.os.Bundle
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.example.graduationdesign.base.BaseFragment
 import com.example.graduationdesign.model.InternetModel
 import com.example.graduationdesign.model.bean.ImageOfBanner
@@ -13,12 +15,17 @@ import kotlin.collections.ArrayList
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.ImageAndText
 import com.example.graduationdesign.model.bean.TypeOfMusicEnum
-import okio.utf8Size
+import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.service.MyService
+import com.example.graduationdesign.service.POSITION
+import com.example.graduationdesign.service.SONG_LIST
 import org.json.JSONObject
+import kotlin.collections.HashMap
 import kotlin.concurrent.thread
 
 class MainActivityViewModel : ViewModel() {
     private var model: InternetModel? = null
+    private var binder: MyService.MyBinder? = null
 
     companion object {
         private var viewModel: MainActivityViewModel? = null
@@ -40,6 +47,30 @@ class MainActivityViewModel : ViewModel() {
         fragmentList.addAll(list)
     }
 
+    fun setBinder(binder: MyService.MyBinder) {
+        this.binder = binder
+    }
+
+    fun getBinder() = this.binder
+
+    fun changeSongAndSongList(position: Int, songList: ArrayList<SongBean>) {
+        binder?.startMusic(
+            HashMap<String, Any>().also {
+                it[POSITION] = position
+                it[SONG_LIST] = songList
+            }
+        )
+    }
+
+    fun changeLocalSongAndSongList(position: Int, songList: ArrayList<SongBean>) {
+        binder?.startLocalMusic(
+            HashMap<String, Any>().also {
+                it[POSITION] = position
+                it[SONG_LIST] = songList
+            }
+        )
+    }
+
     fun getFragmentListSize() = fragmentList.size
     fun getFragmentByPosition(position: Int) = fragmentList[position]
 
@@ -57,24 +88,24 @@ class MainActivityViewModel : ViewModel() {
         _toastString.postValue(message)
     }
 
-    private fun setHideBottomNavigationView(boolean: Boolean){
+    private fun setHideBottomNavigationView(boolean: Boolean) {
         _hideBottomNavigationView.postValue(boolean)
     }
 
-    fun shouldHideView(id: Int){
-        when(id){
+    fun shouldHideView(id: Int) {
+        when (id) {
             in intArrayOf(R.id.musicClubFragment, R.id.exploreFragment, R.id.localFragment) -> {
-                if (_hideBottomNavigationView.value == false){
+                if (_hideBottomNavigationView.value == false) {
                     return
-                }else{
+                } else {
                     setHideBottomNavigationView(false)
                 }
             }
             else -> {
                 println("=======================导航变化:")
-                if (_hideBottomNavigationView.value == true){
+                if (_hideBottomNavigationView.value == true) {
                     return
-                }else{
+                } else {
                     setHideBottomNavigationView(true)
                 }
             }
@@ -94,9 +125,67 @@ class MainActivityViewModel : ViewModel() {
         _user.postValue(user)
     }
 
+
+    // main activity
+    private var mainFooterPosition = -1
+
+    fun setMainFooterPosition(position: Int) {
+        println("=======================我先运行:setMainFooterPosition")
+        mainFooterPosition = position
+    }
+
+//    fun changeCurrentSong(position: Int, list: ArrayList<SongBean>){
+//        if (position == mainFooterPosition) return
+//        binder?.startMusic(HashMap<String, Any>().also {
+//            it[POSITION] = position - 1
+//            it[SONG_LIST] = list
+//        })
+//    }
+
+//    fun hasTheSameContent(list1: ArrayList<SongBean>, list2: ArrayList<SongBean>): Boolean{
+//        if (list1.size == list2.size){
+//
+//        }else{
+//            return false
+//        }
+//    }
+
+    private fun judgePosition() {
+        binder?.let {
+            it.service.currentSongListAndPosition.value?.let { map ->
+                var size = (map["songList"] as ArrayList<SongBean>).size
+                if (size == 1) return
+                size += 2
+                when (mainFooterPosition) {
+                    0 -> {
+                        binder?.changePosition(size - 3)
+                    }
+
+                    size - 1 -> {
+                        binder?.changePosition(0)
+                    }
+
+                    else -> {
+                        binder?.changePosition(mainFooterPosition - 1)
+                    }
+                }
+            }
+        }
+    }
+
+    fun mainFooterDragEnable(state: Int) {
+        if (state == ViewPager2.SCROLL_STATE_IDLE) {
+            println("=======================我先运行:mainFooterDragEnable")
+            judgePosition()
+        }
+    }
+
+
     //local
     fun getInfo() {
-        _user.value?.uid?.let { model?.getUserPlayList(it) }
+        _user.value?.let {
+            model?.getUserPlayList(it.uid!!, it.cookie!!)
+        }
     }
 
     //music club
@@ -122,13 +211,13 @@ class MainActivityViewModel : ViewModel() {
     private val _currentBannerIndexWithAnimation = MutableLiveData<Int>()
     val currentBannerIndexWithAnimation: LiveData<Int> = _currentBannerIndexWithAnimation
 
-    private var position: Int = -1
+    private var bannerPosition: Int = -1
     private var timerIsStarted = false
 
     private var timer: Timer? = null
     private var timerTask: TimerTask? = null
 
-    fun cancelTimer() {
+    private fun cancelTimer() {
         timer?.cancel()
         timerTask?.cancel()
         timer = null
@@ -138,11 +227,14 @@ class MainActivityViewModel : ViewModel() {
 
     fun initTimer() {
         if (_bannerImageList.value?.size == 0) return
-        timer = Timer()
-        timerTask = object : TimerTask() {
-            override fun run() {
-                position = (position + 1) % (_bannerImageList.value?.size?.plus(2)!!)
-                _currentBannerIndexWithAnimation.postValue(position)
+        timer ?: kotlin.run {
+            timer = Timer()
+            timerTask = object : TimerTask() {
+                override fun run() {
+                    bannerPosition =
+                        (bannerPosition + 1) % (_bannerImageList.value?.size?.plus(2)!!)
+                    _currentBannerIndexWithAnimation.postValue(bannerPosition)
+                }
             }
         }
         startScroll()
@@ -151,6 +243,8 @@ class MainActivityViewModel : ViewModel() {
     fun setDataModel(context: Context) {
         model = InternetModel(context)
     }
+
+    fun getDataModel() = model
 
     private fun startScroll() {
         if (!timerIsStarted) {
@@ -164,13 +258,13 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun dragEnded(state: Int) {
-        if (state == 0) {
-            judgeBannerIndexIsEndOrStart(this.position)
+        if (state == RecyclerView.SCROLL_STATE_IDLE) {
+            judgeBannerIndexIsEndOrStart(this.bannerPosition)
         }
     }
 
     fun setPosition(position: Int) {
-        this.position = position
+        this.bannerPosition = position
     }
 
     private fun submitListOfPlaylist(list: ArrayList<ImageAndText>) {
@@ -268,6 +362,7 @@ class MainActivityViewModel : ViewModel() {
                 {
                     thread {
                         it?.let {
+                            println("================it: $it")
                             JSONObject(it).also { json ->
                                 when (val code = json.getInt("code")) {
                                     200 -> {

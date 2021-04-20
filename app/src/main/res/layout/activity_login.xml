@@ -16,7 +16,7 @@
         android:theme="?attr/actionBarTheme"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/exit"
+        app:navigationIcon="@drawable/white_exit"
         android:fitsSystemWindows="true">
 
         <TextView

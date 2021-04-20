@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import kotlinx.android.synthetic.main.layout_song_image_item.view.*
 
-class SongListAdapter : ListAdapter<SongBean, SongListAdapter.Holder>(Compare) {
+class SongListAdapter(private val viewModel: MainActivityViewModel) : ListAdapter<SongBean, SongListAdapter.Holder>(Compare) {
 
     class Holder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
@@ -24,7 +26,6 @@ class SongListAdapter : ListAdapter<SongBean, SongListAdapter.Holder>(Compare) {
         override fun areContentsTheSame(oldItem: SongBean, newItem: SongBean): Boolean {
             return oldItem.id == newItem.id
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -32,7 +33,10 @@ class SongListAdapter : ListAdapter<SongBean, SongListAdapter.Holder>(Compare) {
             .also {
                 return Holder(it).also { holder ->
                     holder.itemView.setOnClickListener {
-
+                        viewModel.changeSongAndSongList(
+                            holder.adapterPosition,
+                            ArrayList(currentList)
+                        )
                     }
                 }
             }
@@ -45,6 +49,7 @@ class SongListAdapter : ListAdapter<SongBean, SongListAdapter.Holder>(Compare) {
             try {
                 Glide.with(this)
                     .load(item.album.picUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
                     .placeholder(R.drawable.shimmer_bg)
                     .error(R.drawable.shimmer_bg)
                     .into(this.findViewById(R.id.iv_song_list_album))

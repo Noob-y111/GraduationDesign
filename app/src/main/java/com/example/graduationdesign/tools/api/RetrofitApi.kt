@@ -14,7 +14,7 @@ import retrofit2.http.*
 
 interface RetrofitApi {
     companion object{
-        const val baseUrl = "http://192.168.31.128:3000"
+        const val baseUrl = "http://192.168.31.64:3000"
     }
 
     @POST("/recommend/resource?")

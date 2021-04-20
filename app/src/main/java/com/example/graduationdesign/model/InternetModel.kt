@@ -1,12 +1,16 @@
 package com.example.graduationdesign.model
 
 import android.content.Context
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.Request
 import com.android.volley.VolleyError
+import com.example.graduationdesign.R
 import com.example.graduationdesign.callback.BaseBehaviorCallBack
 import com.example.graduationdesign.costume.StringPostRequest
 import com.example.graduationdesign.model.bean.*
+import com.example.graduationdesign.model.bean.mv.*
 import com.example.graduationdesign.model.bean.new_album_bean.SingleMonthData
 import com.example.graduationdesign.model.bean.new_album_bean.TheNewDiscShelvesBean
 import com.example.graduationdesign.model.bean.playlist_bean.ListSpecies
@@ -18,12 +22,18 @@ import com.example.graduationdesign.model.bean.playlist_detail_bean.PlaylistDeta
 import com.example.graduationdesign.model.bean.playlist_detail_bean.PlaylistWithSongs
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
 import com.example.graduationdesign.model.bean.ranking_list_bean.TopListDetail
+import com.example.graduationdesign.model.bean.search_bean.*
+import com.example.graduationdesign.model.bean.song_list_bean.AlbumBean
+import com.example.graduationdesign.model.bean.song_list_bean.ArtistBean
 import com.example.graduationdesign.model.bean.song_list_bean.RecommendSongsBean
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.model.bean.user_info.PlaylistResponse
+import com.example.graduationdesign.model.bean.user_info.UserDetailResponse
 import com.example.graduationdesign.tools.api.ApiTools
 import com.example.graduationdesign.tools.JudgeVolleyError
 import com.example.graduationdesign.tools.api.RetrofitApi
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.player_fragment.view.*
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
@@ -392,9 +402,10 @@ class InternetModel constructor(private val context: Context) {
 //        })
 //    }
 
-    fun getUserPlayList(uid: String) {
+    fun getUserPlayList(uid: String, cookies: String) {
         val map = HashMap<String, String>()
         map["uid"] = uid
+        map["cookie"] = cookies
         baseBehavior(map, ApiTools.userInformation(), object : BaseBehaviorCallBack {
             override fun dealWithJSON(json: String) {
                 println("================json: $json")
@@ -452,7 +463,7 @@ class InternetModel constructor(private val context: Context) {
         errorHandling: (error: String?) -> Unit
     ) {
         println("================map[\"cat\"]: ${map["cat"]}")
-        baseBehavior(map, ApiTools.getPlaylistByTag(), object : BaseBehaviorCallBack{
+        baseBehavior(map, ApiTools.getPlaylistByTag(), object : BaseBehaviorCallBack {
             override fun dealWithJSON(json: String) {
                 Gson().fromJson(json, ListSpecies::class.java).also {
                     block(it)
@@ -516,7 +527,7 @@ class InternetModel constructor(private val context: Context) {
                 call: Call<TheNewDiscShelvesBean>,
                 response: Response<TheNewDiscShelvesBean>
             ) {
-                when(val code = response.body()?.code){
+                when (val code = response.body()?.code) {
                     200 -> {
                         response.body()?.let {
                             block(it)
@@ -542,7 +553,7 @@ class InternetModel constructor(private val context: Context) {
         block: (playlistWithSongs: PlaylistWithSongs) -> Unit,
         errorHandling: (error: String?) -> Unit
     ) {
-        baseBehavior(map, ApiTools.getPlaylistDetailById(), object : BaseBehaviorCallBack{
+        baseBehavior(map, ApiTools.getPlaylistDetailById(), object : BaseBehaviorCallBack {
             override fun dealWithJSON(json: String) {
                 println("================json: $json")
                 Gson().fromJson(json, PlaylistDetailById::class.java).also {
@@ -557,13 +568,11 @@ class InternetModel constructor(private val context: Context) {
     }
 
     fun getAlbumListById(
-        id: String,
+        map: HashMap<String, String>,
         block: (albumDetail: AlbumDetail) -> Unit,
         errorHandling: (error: String?) -> Unit
     ) {
-        baseBehavior(HashMap<String, String>().apply {
-            put("id", id)
-        }, ApiTools.getAlbumDetailById(), object : BaseBehaviorCallBack {
+        baseBehavior(map, ApiTools.getAlbumDetailById(), object : BaseBehaviorCallBack {
             override fun dealWithJSON(json: String) {
                 println("================json: $json")
                 Gson().fromJson(json, AlbumDetail::class.java).also {
@@ -577,6 +586,319 @@ class InternetModel constructor(private val context: Context) {
         })
     }
 
+    //service
+    fun isTheMusicAvailable(id: String, callback: BaseBehaviorCallBack) {
+        baseBehavior(
+            HashMap<String, String>().also { it["id"] = id },
+            ApiTools.isTheMusicAvailable(),
+            callback
+        )
+    }
+
+    fun getMusicUrl(id: String, callback: BaseBehaviorCallBack) {
+        baseBehavior(
+            HashMap<String, String>().also { it["id"] = id },
+            ApiTools.getMusicUrl(),
+            callback
+        )
+    }
+
+    //search
+    fun getDefaultKeyWord(
+        block: (data: Data) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(null, ApiTools.searchDefault(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, SearchDetail::class.java).also {
+                    if (it.code == 200) {
+                        block(it.data)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getHotListDetail(
+        block: (list: ArrayList<HotItem>) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(null, ApiTools.searchHotDetailList(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, HotDetail::class.java).also {
+                    if (it.code == 200) {
+                        block(it.data)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getSearchSuggest(
+        map: HashMap<String, String>,
+        block: (result: Result) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.searchSuggestList(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                println("================json: $json")
+                Gson().fromJson(json, SuggestResult::class.java).also {
+                    if (it.code == 200) {
+                        block(it.result)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+
+        })
+    }
+
+    fun getSearchResultByKeyword(
+        map: HashMap<String, String>,
+        block: (result: Results) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.searchResultByKeyword(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, SearchResultAll::class.java).also {
+                    if (it.code == 200) {
+                        block(it.result)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getOtherSearchResultByKeyword(
+        map: HashMap<String, String>,
+        block: (json: String) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.searchResultByKeyword(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                block(json)
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    //explore
+    fun mvRankingListByArea(
+        map: HashMap<String, String>,
+        block: (map: HashMap<String, Any>) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.mvRankingList(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, MvResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(HashMap<String, Any>().apply {
+                            this["time"] = it.updateTime
+                            this["list"] = it.data
+                        })
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getMvInfoById(
+        vid: String,
+        block: (mvInfo: MvDetailInfo) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(HashMap<String, String>().apply {
+            this["mvid"] = vid
+        }, ApiTools.mvDetailInfo(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, MvDetailResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it.data)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getMvUrlById(
+        vid: String,
+        block: (mvUrl: MvUrl) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(HashMap<String, String>().apply {
+            this["id"] = vid
+        }, ApiTools.mvUrl(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, MvUrlResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it.data)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getSimilarMv(
+        vid: String,
+        success: (mvList: ArrayList<MvBean>) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(HashMap<String, String>().apply {
+            this["mvid"] = vid
+        }, ApiTools.similarMv(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, MvResponse::class.java).also {
+                    if (it.code == 200) {
+                        success(it.data)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+
+        })
+    }
+
+    //local music
+    private fun getAlbumImage(albumId: String): Any {
+        val uri = "content://media/external/audio/albums"
+        val selector = arrayOf("album_art")
+        val albumCursor = context.contentResolver.query(
+            Uri.parse("$uri/${albumId}"),
+            selector,
+            null, null, null
+        )
+        albumCursor?.let {
+            if (it.count >= 1 && it.columnCount >= 1) {
+                it.moveToNext()
+                val albumImage = it.getString(0)
+                it.close()
+                return albumImage ?: R.drawable.player_bg.toString()
+            }
+        }
+        albumCursor?.close()
+        return R.drawable.player_bg
+    }
+
+    fun getLocalMusic(
+        block: ArrayList<SongBean>.() -> Unit,
+        errorHandling: (error: String?) -> Unit
+    ) {
+        thread {
+            val cursor = context.contentResolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                null,
+                null,
+                null,
+                MediaStore.Audio.Media.DEFAULT_SORT_ORDER
+            )
+            cursor ?: kotlin.run {
+                errorHandling("还没有歌曲")
+            }
+            cursor?.let {
+                val songList = ArrayList<SongBean>()
+                while (it.moveToNext()) {
+                    val id = it.getLong(it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+                    val name =
+                        it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME))
+                    val artistId =
+                        it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID))
+                    val artistName =
+                        it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
+                    val albumId =
+                        it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))
+                    val albumName =
+                        it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
+                    val artist = ArtistBean(artistId, artistName)
+                    val album = AlbumBean(albumId, albumName, getAlbumImage(albumId))
+                    val song = SongBean(
+                        id.toString(),
+                        name,
+                        ArrayList<ArtistBean>().also { list -> list.add(artist) },
+                        album
+                    )
+                    println("================song: $song")
+                    songList.add(song)
+                }
+                block(songList)
+            }
+            cursor?.close()
+        }
+    }
+
+    //user info
+    fun getUserDetail(
+        map: HashMap<String, String>,
+        block: (detail: UserDetailResponse) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.userDetail(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, UserDetailResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    fun getUserPlaylistById(
+        map: HashMap<String, String>,
+        block: ArrayList<Playlist>.() -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.userPlaylist(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, PlaylistResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it.playlist)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+
+        })
+    }
 
 //    fun getRecommendDailySong(
 //        map: HashMap<String, String>,

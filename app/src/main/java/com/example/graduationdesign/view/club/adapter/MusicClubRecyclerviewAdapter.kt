@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.graduationdesign.R
 import kotlinx.android.synthetic.main.layout_advice_item.view.*
@@ -25,13 +26,8 @@ class MusicClubRecyclerviewAdapter(private val callback: MusicClubRecyclerviewAd
 
     override fun getItemViewType(position: Int): Int {
         return when (position) {
-            0, 2 -> {
-                ADVICE_HOLDER
-            }
-
-            else -> {
-                SONG_HOLDER
-            }
+            0, 2 -> ADVICE_HOLDER
+            else -> SONG_HOLDER
         }
     }
 
@@ -65,7 +61,8 @@ class MusicClubRecyclerviewAdapter(private val callback: MusicClubRecyclerviewAd
                                 text =
                                     holder.itemView.resources.getString(R.string.advice_button)
                                 setOnClickListener {
-                                    Navigation.findNavController(it).navigate(R.id.action_musicClubFragment_to_playlistFragment)
+                                    Navigation.findNavController(it)
+                                        .navigate(R.id.action_musicClubFragment_to_playlistFragment)
                                 }
                             }
                             callback.initSubRecyclerViewCallBack(itemView.recycler_advice, position)
@@ -79,7 +76,8 @@ class MusicClubRecyclerviewAdapter(private val callback: MusicClubRecyclerviewAd
                             itemView.advice_button.text =
                                 holder.itemView.resources.getString(R.string.advice_button)
                             itemView.advice_button.setOnClickListener {
-
+                                it.findNavController()
+                                    .navigate(R.id.action_musicClubFragment_to_newAlbumFragment)
                             }
                             callback.initSubRecyclerViewCallBack(itemView.recycler_advice, position)
                         }

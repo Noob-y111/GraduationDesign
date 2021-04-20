@@ -1,11 +1,13 @@
 package com.example.graduationdesign.view.reuse
 
+import android.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -14,6 +16,7 @@ import com.example.graduationdesign.base.AppBarStateChangedListener
 import com.example.graduationdesign.base.BlurBitmap
 import com.example.graduationdesign.databinding.ReuseListFragmentBinding
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.example.graduationdesign.view.reuse.adapter.ReuseListAdapter
 import com.google.android.material.appbar.AppBarLayout
 import jp.wasabeef.blurry.Blurry
@@ -28,6 +31,7 @@ class ReuseListFragment : Fragment() {
     }
 
     private lateinit var viewModel: ReuseListViewModel
+    private lateinit var mainViewModel: MainActivityViewModel
     private lateinit var binding: ReuseListFragmentBinding
 
     override fun onCreateView(
@@ -42,10 +46,13 @@ class ReuseListFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(ReuseListViewModel::class.java)
         viewModel.initInternetModel(requireContext())
+        mainViewModel = MainActivityViewModel.newInstance(requireActivity())
+        viewModel.setUser(mainViewModel.user.value)
 
         binding.toolbar.setNavigationOnClickListener {
             Navigation.findNavController(it).navigateUp()
         }
+
         setAppbar()
         initView()
     }
@@ -74,7 +81,7 @@ class ReuseListFragment : Fragment() {
     }
 
     private fun initView() {
-        val adapter = ReuseListAdapter()
+        val adapter = ReuseListAdapter(mainViewModel, ReuseListAdapter.Type.INTERNET)
         binding.reuseRecyclerview.apply {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = adapter

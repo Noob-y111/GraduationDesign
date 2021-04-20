@@ -25,4 +25,12 @@
     <color name="detail_text_color">#ddd</color>
     <color name="color_888">#888888</color>
     <color name="half_translate_black">#55111111</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="light_blue_900">#FF01579B</color>
+    <color name="light_blue_A200">#FF40C4FF</color>
+    <color name="light_blue_A400">#FF00B0FF</color>
+    <color name="black_overlay">#66000000</color>
+    <color name="translate_black">#19111111</color>
+    <color name="translate_66_white">#66ffffff</color>
+    <color name="translate_88_white">#88ffffff</color>
 </resources>

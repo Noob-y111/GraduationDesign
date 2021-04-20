@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -55,7 +56,6 @@ class SongListFragment : BaseFragment() {
     private fun initAppbarLayout() {
         binding.songListAppbar.addOnOffsetChangedListener(object : AppBarStateChangedListener() {
             override fun onStateChanged(appbar: AppBarLayout?, state: State) {
-                requireActivity().window.statusBarColor = Color.TRANSPARENT
             }
 
             override fun onStateChanged(appbar: AppBarLayout?, verticalOffset: Int) {
@@ -86,7 +86,7 @@ class SongListFragment : BaseFragment() {
 
 
     private fun initRecyclerView() {
-        val songListAdapter = SongListAdapter()
+        val songListAdapter = SongListAdapter(mainViewModel)
         binding.songListRecycler.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = songListAdapter
@@ -100,17 +100,12 @@ class SongListFragment : BaseFragment() {
                     .load(it[0].album.picUrl)
                     .submit().get()
                 MainScope().launch {
-                    Glide.with(this@SongListFragment).load(bitmap)
-                        .error(R.drawable.shimmer_bg)
-                        .placeholder(R.drawable.shimmer_bg)
-                        .transform(BlurBitmap(requireContext(), 25f))
+                    Blurry.with(requireContext())
+                        .radius(10)
+                        .sampling(10)
+                        .async()
+                        .from(bitmap)
                         .into(binding.ivHeaderBottom)
-//                    Blurry.with(requireContext())
-//                        .radius(25)
-//                        .sampling(10)
-//                        .async()
-//                        .from(bitmap)
-//                        .into(binding.ivHeaderBottom)
                     binding.ivHeaderTop.setImageBitmap(bitmap)
                 }
             }

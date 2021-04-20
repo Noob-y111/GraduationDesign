@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.ListType
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
@@ -34,16 +35,19 @@ class RankingItemOtherAdapter(private val screenWidth: Int) :
             .also {
                 return OtherRankingHolder(it)
                     .also { holder ->
-                    holder.itemView.setOnClickListener { view ->
-                        val bundle = Bundle().apply {
-                            val item = currentList[holder.adapterPosition]
-                            putParcelable("list_detail", item)
-                            putInt("type", ListType.RANKING_LIST)
+                        holder.itemView.setOnClickListener { view ->
+                            val bundle = Bundle().apply {
+                                val item = currentList[holder.adapterPosition]
+                                putParcelable("list_detail", item)
+                                putInt("type", ListType.RANKING_LIST)
+                            }
+                            Navigation.findNavController(view)
+                                .navigate(
+                                    R.id.action_rankingListFragment_to_reuseListFragment,
+                                    bundle
+                                )
                         }
-                        Navigation.findNavController(view)
-                            .navigate(R.id.action_rankingListFragment_to_reuseListFragment, bundle)
                     }
-                }
             }
     }
 
@@ -62,6 +66,7 @@ class RankingItemOtherAdapter(private val screenWidth: Int) :
 
         with(holder.itemView) {
             Glide.with(this).load(item.coverImgUrl).error(R.drawable.shimmer_bg)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .placeholder(R.drawable.shimmer_bg).into(iv_ranking_image_short)
 
             iv_ranking_image_short.layoutParams.width = borderWidth
