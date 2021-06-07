@@ -1,8 +1,6 @@
 package com.example.graduationdesign.view.login
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.fragment.app.Fragment
@@ -10,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.graduationdesign.databinding.FragmentAccountBinding
-import com.example.graduationdesign.view.dialog.WaitingDialog
-import com.example.graduationdesign.view.main.MainActivity
 
 class AccountFragment : Fragment() {
 

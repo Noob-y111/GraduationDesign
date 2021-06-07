@@ -31,7 +31,7 @@ class LocalMusicFragment : Fragment() {
     }
 
     private fun initRecycler(){
-        val adapter = ReuseListAdapter(mainViewModel, ReuseListAdapter.Type.LOCAL)
+        val adapter = ReuseListAdapter(mainViewModel, ReuseListAdapter.Type.LOCAL, null)
         binding.localMusicRecycler.apply {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = adapter

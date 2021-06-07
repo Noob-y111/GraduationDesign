@@ -89,6 +89,16 @@ abstract class BaseDialogFragment: DialogFragment() {
         }
     }
 
+    protected fun dialogBaseSetting(wPercent: Int, gravity: Int){
+        val window = dialog?.window
+        window?.let {
+            val width = ScreenUtils.getWidth(requireActivity())
+            it.attributes.width = (width * (wPercent.toFloat()/100)).toInt()
+            it.setGravity(gravity)
+            it.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+    }
+
     protected fun dialogBaseSetting(){
         val window = dialog?.window
         window?.let {

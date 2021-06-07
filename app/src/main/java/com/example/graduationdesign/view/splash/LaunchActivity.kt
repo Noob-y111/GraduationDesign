@@ -10,9 +10,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import cn.leancloud.AVUser
 import com.example.graduationdesign.R
+import com.example.graduationdesign.model.InternetModel
+import com.example.graduationdesign.model.bean.User
+import com.example.graduationdesign.tools.SharedPreferencesUtil
+import com.example.graduationdesign.tools.ToastUtil
+import com.example.graduationdesign.view.bridge.BridgeActivity
 import com.example.graduationdesign.view.login.LoginActivity
 import com.example.graduationdesign.view.login.LoginActivityViewModel
 import com.example.graduationdesign.view.main.MainActivity
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import kotlin.concurrent.thread
 
 class LaunchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,8 +30,9 @@ class LaunchActivity : AppCompatActivity() {
         getPermissions()
     }
 
+    private val handler = Handler()
     private val r = Runnable {
-        startActivity(Intent(this, LoginActivity::class.java))
+        startActivity(Intent(this, BridgeActivity::class.java))
         overridePendingTransition(R.anim.detail_dialog_enter, R.anim.keep_out)
         finish()
     }
@@ -43,8 +53,85 @@ class LaunchActivity : AppCompatActivity() {
                 100
             )
         } else {
-            Handler().postDelayed(r, 2000)
+            judgeIsLogin()
         }
+    }
+
+    private fun login(user: User){
+        startActivity(Intent(this, MainActivity::class.java).also {
+            Bundle().apply {
+                putString("uid", user.uid)
+                putString("head", user.avatarUrl)
+                putString("background", user.backgroundUrl)
+                putString("token", user.token)
+                putString("name", user.nickName)
+                putString("cookie", user.cookie)
+                it.putExtra("user", this)
+            }
+        })
+        finish()
+    }
+
+    private fun dealWithJson(json: String) {
+        thread {
+            JSONObject(json).also {
+                when (it.getInt("code")) {
+                    200 -> {
+                        //todo 成功
+                        val uid: String
+                        val nickname: String
+                        val avatarUrl: String
+                        val backgroundUrl: String
+                        val token = it.getString("token")
+                        val cookie = it.getString("cookie")
+                        it.getJSONObject("account").also { account ->
+                            uid = account.getString("id")
+                        }
+                        it.getJSONObject("profile").also { profile ->
+                            avatarUrl = profile.getString("avatarUrl")
+                            backgroundUrl = profile.getString("backgroundUrl")
+                            nickname = profile.getString("nickname")
+                        }
+                        val user = User(uid, nickname, avatarUrl, backgroundUrl, token, cookie)
+                        MainScope().launch {
+                            login(user)
+                        }
+                    }
+
+                    502 -> {
+                        //todo 密码错误
+                    }
+                }
+            }
+        }
+    }
+
+    private fun judgeIsLogin(){
+        ToastUtil.show(applicationContext, "请稍候...")
+        SharedPreferencesUtil.readUidAndPassword({ uid: String, password: String ->
+            val model = InternetModel(this)
+            if (uid.substring(uid.length - 8) == "@163.com"){
+                val map = HashMap<String, String>()
+                map["email"] = uid
+                map["password"] = password
+                model.loginByEmail(map, {
+                    dealWithJson(it)
+                }, {
+                    handler.postDelayed(r, 2000)
+                })
+            }else{
+                val map = HashMap<String, String>()
+                map["phone"] = uid
+                map["password"] = password
+                model.loginByCellphone(map, {
+                    dealWithJson(it)
+                }, {
+                    handler.postDelayed(r, 2000)
+                })
+            }
+        }, {
+            handler.postDelayed(r, 2000)
+        })
     }
 
     override fun onRequestPermissionsResult(
@@ -59,7 +146,7 @@ class LaunchActivity : AppCompatActivity() {
         )
         if (requestCode == 100) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Handler().postDelayed(r, 2000)
+                judgeIsLogin()
             } else {
                 finish()
             }

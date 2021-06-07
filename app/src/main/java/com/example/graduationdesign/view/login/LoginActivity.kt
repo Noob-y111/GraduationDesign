@@ -2,14 +2,17 @@ package com.example.graduationdesign.view.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseActivity
 import com.example.graduationdesign.databinding.ActivityLoginBinding
 import com.example.graduationdesign.tools.ToastUtil
+import com.example.graduationdesign.view.bridge.FINISH_BRIDGE
 import com.example.graduationdesign.view.dialog.WaitingDialog
 import com.example.graduationdesign.view.main.MainActivity
 import com.example.graduationdesign.view.registered.RegisteredActivity
@@ -35,7 +38,7 @@ class LoginActivity : BaseActivity() {
 
     override fun initView() {
         viewModel = LoginActivityViewModel.newInstance(this)
-        viewModel.initModel(this)
+        viewModel.initModel(this.applicationContext)
         initViewPager()
 
         binding.loginToolbar.setNavigationOnClickListener{
@@ -60,6 +63,7 @@ class LoginActivity : BaseActivity() {
                 }
             })
             finish()
+            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(FINISH_BRIDGE))
         })
 
 //        viewModel.dialogIsCancelable.observe(this, {
@@ -103,6 +107,18 @@ class LoginActivity : BaseActivity() {
             overridePendingTransition(R.anim.detail_dialog_enter, R.anim.keep_out)
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.loginUser.removeObservers(this)
+        viewModel.toastString.removeObservers(this)
+        viewModel.showDialogFragment.removeObservers(this)
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fragment_pop_in, R.anim.fragment_pop_out)
     }
 
 //textview 部分点击事件

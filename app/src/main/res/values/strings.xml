@@ -6,9 +6,10 @@
     <string name="info_login">登录</string>
     <string name="info_registered">注册</string>
     <string name="info_to_res">没有账号？<u>点击注册</u></string>
-    <string name="info_login_out">登出</string>
+    <string name="info_login_out">退出登录</string>
     <string name="search_hint">搜索</string>
     <string name="default_user_name">这是一行测试文字</string>
+    <string name="default_content_menu_title">菜单</string>
     <string name="item_music">音乐馆</string>
     <string name="item_explore">探索</string>
     <string name="item_local">我的</string>
@@ -48,4 +49,28 @@
     <string name="info_local_music">本地音乐</string>
     <string name="info_edit">编辑</string>
     <string name="info_change_background">更换背景</string>
+    <string name="title_activity_bridge">BridgeActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="info_cancel">取消</string>
+    <string name="info_confirm">确定</string>
+    <string name="info_setting">设置</string>
+
+
+    <string name="change_head_by_album">更换头像</string>
+    <string name="sava_head">保存头像</string>
+    <string name="change_head_by_camera">从相机拍照</string>
+    <string name="info_no_lyric">没有歌词哦~</string>
+    <string name="info_title_play_his">播放历史</string>
+    <string name="info_no_play_his">暂时还没有哦~</string>
+    <string name="info_nickname">昵称：</string>
+    <string name="info_gender">性别：</string>
+    <string name="info_signature">个性签名：</string>
+    <string name="info_input">请输入</string>
 </resources>

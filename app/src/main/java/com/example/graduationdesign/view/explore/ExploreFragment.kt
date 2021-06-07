@@ -16,6 +16,7 @@ import com.example.graduationdesign.base.BaseFragment
 import com.example.graduationdesign.databinding.ExploreFragmentBinding
 import com.example.graduationdesign.view.explore.subview.MoreVideoFragment
 import com.example.graduationdesign.view.explore.subview.MvFragment
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -24,6 +25,7 @@ class ExploreFragment : BaseFragment() {
     private lateinit var binding: ExploreFragmentBinding
 
     private lateinit var viewModel: ExploreViewModel
+    private lateinit var mainActivityViewModel: MainActivityViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,14 +36,14 @@ class ExploreFragment : BaseFragment() {
     }
 
     private fun initViewPager2() {
-        binding.exploreViewpager2.isUserInputEnabled = false
+//        binding.exploreViewpager2.isUserInputEnabled = false
         binding.exploreViewpager2.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount() = 2
 
             override fun createFragment(position: Int) = if (position == 0) {
                 MvFragment.newInstance(null, null)
             } else {
-                MoreVideoFragment.newInstance(null, null)
+                MoreVideoFragment()
             }
         }
 
@@ -58,9 +60,12 @@ class ExploreFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ExploreViewModel.newInstance(requireActivity())
-
+        mainActivityViewModel = MainActivityViewModel.newInstance(requireActivity())
+        viewModel.setModel(mainActivityViewModel.getDataModel())
         initViewPager2()
     }
+
+    override fun toSetting(): Nothing? = null
 
     override fun getTitle(): String = getString(R.string.item_explore)
 

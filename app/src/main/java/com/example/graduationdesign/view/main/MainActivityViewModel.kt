@@ -15,10 +15,15 @@ import kotlin.collections.ArrayList
 import com.example.graduationdesign.R
 import com.example.graduationdesign.model.bean.ImageAndText
 import com.example.graduationdesign.model.bean.TypeOfMusicEnum
+import com.example.graduationdesign.model.bean.club_bean.NewAlbumResponse
+import com.example.graduationdesign.model.bean.club_bean.RecommendPlaylistResponse
+import com.example.graduationdesign.model.bean.new_album_bean.SingleMonthData
+import com.example.graduationdesign.model.bean.playlist_bean.Playlist
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
 import com.example.graduationdesign.service.MyService
 import com.example.graduationdesign.service.POSITION
 import com.example.graduationdesign.service.SONG_LIST
+import com.google.gson.Gson
 import org.json.JSONObject
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
@@ -86,6 +91,10 @@ class MainActivityViewModel : ViewModel() {
 
     private fun showMessage(message: String) {
         _toastString.postValue(message)
+    }
+
+    fun updateUserSelf(){
+        _user.value = _user.value
     }
 
     private fun setHideBottomNavigationView(boolean: Boolean) {
@@ -188,22 +197,37 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
+    private val _localPlaylist = MutableLiveData<ArrayList<Playlist>>()
+    val localPlaylist: LiveData<ArrayList<Playlist>> = _localPlaylist
+
+    fun getUserPlaylist(user: User) {
+        if (_localPlaylist.value != null) return
+        model?.getUserPlaylistById(HashMap<String, String>().also {
+            it["uid"] = user.uid!!
+            it["cookie"] = user.cookie!!
+        }, {
+            _localPlaylist.postValue(this)
+        }, {
+
+        })
+    }
+
     //music club
     private val _bannerImageList =
         MutableLiveData<ArrayList<ImageOfBanner>>(ArrayList<ImageOfBanner>())
     val bannerImageList: LiveData<ArrayList<ImageOfBanner>> = _bannerImageList
 
-    private val _adviceImageList =
-        MutableLiveData<ArrayList<ImageAndText>>()
-    val adviceImageList: LiveData<ArrayList<ImageAndText>> = _adviceImageList
+    private val _playlist =
+        MutableLiveData<ArrayList<Playlist>>()
+    val playlist: LiveData<ArrayList<Playlist>> = _playlist
 
     private val _adviceNewestAlbums =
-        MutableLiveData<ArrayList<ImageAndText>>()
-    val adviceNewestAlbums: LiveData<ArrayList<ImageAndText>> = _adviceNewestAlbums
+        MutableLiveData<ArrayList<SingleMonthData>>()
+    val adviceNewestAlbums: LiveData<ArrayList<SingleMonthData>> = _adviceNewestAlbums
 
     private val _adviceNewSong =
-        MutableLiveData<ArrayList<ArrayList<ImageAndText>>>()
-    val adviceNewSong: LiveData<ArrayList<ArrayList<ImageAndText>>> = _adviceNewSong
+        MutableLiveData<ArrayList<SongBean>>()
+    val adviceNewSong: LiveData<ArrayList<SongBean>> = _adviceNewSong
 
     private val _currentBannerIndex = MutableLiveData<Int>()
     val currentBannerIndex: LiveData<Int> = _currentBannerIndex
@@ -217,7 +241,13 @@ class MainActivityViewModel : ViewModel() {
     private var timer: Timer? = null
     private var timerTask: TimerTask? = null
 
-    private fun cancelTimer() {
+    fun changeCurrentBannerIndex() {
+        if (bannerPosition != -1) {
+            _currentBannerIndex.postValue(bannerPosition)
+        }
+    }
+
+    fun cancelTimer() {
         timer?.cancel()
         timerTask?.cancel()
         timer = null
@@ -226,18 +256,21 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun initTimer() {
-        if (_bannerImageList.value?.size == 0) return
-        timer ?: kotlin.run {
-            timer = Timer()
-            timerTask = object : TimerTask() {
-                override fun run() {
-                    bannerPosition =
-                        (bannerPosition + 1) % (_bannerImageList.value?.size?.plus(2)!!)
-                    _currentBannerIndexWithAnimation.postValue(bannerPosition)
+        _bannerImageList.value?.let {
+            if (it.size == 0 || it.size == 1)
+                return
+            timer ?: kotlin.run {
+                timer = Timer()
+                timerTask = object : TimerTask() {
+                    override fun run() {
+                        bannerPosition =
+                            (bannerPosition + 1) % (it.size.plus(2))
+                        _currentBannerIndexWithAnimation.postValue(bannerPosition)
+                    }
                 }
             }
+            startScroll()
         }
-        startScroll()
     }
 
     fun setDataModel(context: Context) {
@@ -267,15 +300,15 @@ class MainActivityViewModel : ViewModel() {
         this.bannerPosition = position
     }
 
-    private fun submitListOfPlaylist(list: ArrayList<ImageAndText>) {
-        _adviceImageList.postValue(list)
+    private fun submitListOfPlaylist(list: ArrayList<Playlist>) {
+        _playlist.postValue(list)
     }
 
-    private fun submitListOfNewestAlbums(list: ArrayList<ImageAndText>) {
+    private fun submitListOfNewestAlbums(list: ArrayList<SingleMonthData>) {
         _adviceNewestAlbums.postValue(list)
     }
 
-    private fun submitListOfSongItem(list: ArrayList<ArrayList<ImageAndText>>) {
+    private fun submitListOfSongItem(list: ArrayList<SongBean>) {
         _adviceNewSong.postValue(list)
     }
 
@@ -319,26 +352,11 @@ class MainActivityViewModel : ViewModel() {
         model?.getNewestAlbum({
             thread {
                 it?.let {
-                    JSONObject(it).also { jsonObject ->
-                        when (val code = jsonObject.getInt("code")) {
-                            200 -> {
-                                val albums = jsonObject.getJSONArray("albums")
-                                val length = albums.length()
-                                val list = ArrayList<ImageAndText>()
-                                for (i in 0 until length) {
-                                    val album = albums.getJSONObject(i)
-                                    val imageUrl = album.getString("picUrl")
-                                    val text = album.getString("name")
-                                    val id = album.getString("id")
-                                    list.add(ImageAndText(imageUrl, text, id, TypeOfMusicEnum.SONG))
-                                    if (i >= 5) break
-                                }
-                                submitListOfNewestAlbums(list)
-                            }
-
-                            else -> {
-                                showMessage("错误类型：$code")
-                            }
+                    Gson().fromJson(it, NewAlbumResponse::class.java).also { response ->
+                        if (response.code == 200) {
+                            submitListOfNewestAlbums(response.albums)
+                        } else {
+                            showMessage("错误类型：${response.code}")
                         }
                     }
                 }
@@ -360,38 +378,15 @@ class MainActivityViewModel : ViewModel() {
         user.value?.let { it ->
             model?.getRecommendPlaylist(it.uid!!, it.cookie!!,
                 {
-                    thread {
-                        it?.let {
-                            println("================it: $it")
-                            JSONObject(it).also { json ->
-                                when (val code = json.getInt("code")) {
-                                    200 -> {
-                                        val recommend = json.getJSONArray("recommend")
-                                        val playlist = ArrayList<ImageAndText>()
-                                        for (i in 0 until recommend.length()) {
-                                            val aImageAndText = recommend.getJSONObject(i)
-                                            val id = aImageAndText.getString("id")
-                                            val imageUrl = aImageAndText.getString("picUrl")
-                                            val text = aImageAndText.getString("name")
-                                            playlist.add(
-                                                ImageAndText(
-                                                    imageUrl,
-                                                    text,
-                                                    id,
-                                                    TypeOfMusicEnum.PLAYLIST
-                                                )
-                                            )
-                                            if (i >= 5) break
-                                        }
-                                        submitListOfPlaylist(playlist)
-                                    }
-
-                                    else -> {
-                                        showMessage("错误类型：$code")
-                                    }
+                    it?.let { string ->
+                        Gson().fromJson(string, RecommendPlaylistResponse::class.java)
+                            .also { response ->
+                                if (response.code == 200) {
+                                    submitListOfPlaylist(response.recommend)
+                                } else {
+                                    showMessage("错误类型：${response.code}")
                                 }
                             }
-                        }
                     }
                 }, {
                     showMessage(it!!)

@@ -19,6 +19,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseFragment
 import com.example.graduationdesign.databinding.SearchFragmentBinding
@@ -35,10 +36,15 @@ class SearchFragment : Fragment() {
 
     companion object {
         fun newInstance() = SearchFragment()
+        private const val HOT = "hot"
+        private const val RESULT = "result"
     }
 
     private lateinit var viewModel: SearchViewModel
     private lateinit var binding: SearchFragmentBinding
+
+    private val hotFragment = SearchHotFragment()
+    private val resultFragment = SearchResultFragment()
 
     private val watcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -106,10 +112,25 @@ class SearchFragment : Fragment() {
         })
     }
 
+    private fun initFragmentContainer() {
+        if (!hotFragment.isAdded) {
+            childFragmentManager.beginTransaction()
+                .add(R.id.search_fragment_container, hotFragment)
+                .commitAllowingStateLoss()
+        }
+    }
+
     private fun navigate(keyword: String, actionId: Int, enable: Boolean) {
         if (enable) {
-            Navigation.findNavController(requireActivity(), R.id.search_fragment_container)
-                .navigate(actionId)
+//            Navigation.findNavController(requireActivity(), R.id.search_fragment_container)
+//                .navigate(actionId)
+            if (!resultFragment.isAdded) {
+                childFragmentManager.beginTransaction()
+                    .hide(hotFragment)
+                    .add(R.id.search_fragment_container, resultFragment)
+                    .addToBackStack(RESULT)
+                    .commitAllowingStateLoss()
+            }
         }
 
         viewModel.changeKeyword(keyword)
@@ -148,6 +169,7 @@ class SearchFragment : Fragment() {
 
         initToolbar()
         initSearchView()
+        initFragmentContainer()
 
         observeData()
         requestData()

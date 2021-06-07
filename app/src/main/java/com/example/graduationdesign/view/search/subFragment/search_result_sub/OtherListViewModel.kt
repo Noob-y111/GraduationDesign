@@ -21,11 +21,13 @@ class OtherListViewModel: ViewModel() {
         this.model = model
     }
 
-    private fun changeOtherList(list: ArrayList<*>) {
-        println("================list: $list")
-        val newList = _otherList.value
-        newList?.addAll(list)
-        _otherList.postValue(newList)
+    private fun changeOtherList(list: ArrayList<*>?) {
+        list?.let {
+            println("================list: $list")
+            val newList = _otherList.value
+            newList?.addAll(it)
+            _otherList.postValue(newList)
+        }
     }
 
     fun clearList() {

@@ -108,7 +108,6 @@ class RegisteredViewModel : ViewModel() {
     }
 
 
-    //不频繁设置 待解决
     fun isLengthOk(number: String, isEnable: Boolean) {
         _registeredEnabled.postValue(false)
         when {

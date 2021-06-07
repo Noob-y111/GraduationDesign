@@ -69,8 +69,8 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    val adapter = MainFooterAdapter(supportFragmentManager)
     private fun bindForegroundServiceAndInitFooter() {
-        val adapter = MainFooterAdapter(supportFragmentManager)
         binding.mainFooter.pager2Footer.adapter = adapter
         binding.mainFooter.pager2Footer.registerOnPageChangeCallback(object :
             ViewPager2.OnPageChangeCallback() {
@@ -89,62 +89,64 @@ class MainActivity : BaseActivity() {
 
         Intent(this, MyService::class.java).apply {
             startService(this)
-            bindService(this, object : ServiceConnection {
-                override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                    val binder = service as MyService.MyBinder
-                    viewModel.setBinder(binder)
-                    val mService = service.service
+            bindService(this, connection, Service.BIND_AUTO_CREATE)
+        }
+    }
 
-                    mService.currentSongListAndPosition.observe(this@MainActivity, {
-                        val position = (it[POSITION] as Int) + 1
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MyService.MyBinder
+            viewModel.setBinder(binder)
+            val mService = service.service
+
+            mService.currentSongListAndPosition.observe(this@MainActivity, {
+                val position = (it[POSITION] as Int) + 1
 //                        if (binding.mainFooter.pager2Footer.currentItem == position)
 //                            return@observe
-                        val list = it[SONG_LIST]
-                        if (list is ArrayList<*>) {
-                            adapter.submitList(it[SONG_LIST] as ArrayList<SongBean>) {
-                                binding.mainFooter.pager2Footer.setCurrentItem(
-                                    position,
-                                    false
-                                )
-                            }
-                        }
-                    })
-
-                    mService.canFooterShow.observe(this@MainActivity, {
-                        if (it){
-                            binding.mainFooter.clFooter.visibility = View.VISIBLE
-                        }else{
-                            binding.mainFooter.clFooter.visibility = View.GONE
-                        }
-                    })
-
-                    mService.progressBarDuration.observe(this@MainActivity, {
-                        binding.mainFooter.musicProgress.max = it
-                    })
-
-                    mService.progressBarPosition.observe(this@MainActivity, {
-                        binding.mainFooter.musicProgress.progress = it
-                    })
-
-                    mService.progressBarBuffer.observe(this@MainActivity, {
-                        binding.mainFooter.musicProgress.secondaryProgress = it
-                    })
-
-                    mService.stopOrResumeMediaPlayer.observe(this@MainActivity, {
-                        if (it){
-                            binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_play)
-                        }else{
-                            binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_pause)
-                        }
-                    })
+                val list = it[SONG_LIST]
+                if (list is ArrayList<*>) {
+                    adapter.submitList(it[SONG_LIST] as ArrayList<SongBean>) {
+                        binding.mainFooter.pager2Footer.setCurrentItem(
+                            position,
+                            false
+                        )
+                    }
                 }
+            })
 
-                override fun onServiceDisconnected(name: ComponentName?) {
-
+            mService.canFooterShow.observe(this@MainActivity, {
+                if (it){
+                    binding.mainFooter.clFooter.visibility = View.VISIBLE
+                }else{
+                    binding.mainFooter.clFooter.visibility = View.GONE
                 }
+            })
 
-            }, Service.BIND_AUTO_CREATE)
+            mService.progressBarDuration.observe(this@MainActivity, {
+                binding.mainFooter.musicProgress.max = it
+            })
+
+            mService.progressBarPosition.observe(this@MainActivity, {
+                binding.mainFooter.musicProgress.progress = it
+            })
+
+            mService.progressBarBuffer.observe(this@MainActivity, {
+                binding.mainFooter.musicProgress.secondaryProgress = it
+            })
+
+            mService.stopOrResumeMediaPlayer.observe(this@MainActivity, {
+                if (it){
+                    binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_play)
+                }else{
+                    binding.mainFooter.ivFooterPlayPause.setImageResource(R.drawable.footer_pause)
+                }
+            })
         }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+        }
+
     }
 
     override fun setToolBarTitle() = ""
@@ -152,6 +154,12 @@ class MainActivity : BaseActivity() {
     override fun getContentView(): View {
         binding = ActivityMainBinding.inflate(layoutInflater)
         return binding.root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
+        stopService(Intent(this, MyService::class.java))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -213,6 +221,11 @@ class MainActivity : BaseActivity() {
 //        navGraph.startDestination = destination1.id
 //        return navGraph
 //    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+    }
 
     private fun initContainer() {
 

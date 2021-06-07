@@ -4,81 +4,75 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
 import android.widget.FrameLayout
+import androidx.core.view.children
 import androidx.viewpager2.widget.ViewPager2
-import androidx.viewpager2.widget.ViewPager2.ORIENTATION_HORIZONTAL
-import kotlin.math.absoluteValue
-import kotlin.math.sign
+import kotlin.math.abs
 
 class ViewPager2Container @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
+    private var startX = 0f
+    private var startY = 0f
+    private var childViewPager2: ViewPager2? = null
 
-    private var touchSlop = 0
-    private var initialX = 0f
-    private var initialY = 0f
-
-    private val parentViewPager2: ViewPager2?
-        get() {
-            var v: View? = parent as? View
-            while (v != null && v !is ViewPager2) {
-                v = parent as View
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        for (i in children) {
+            if (i is ViewPager2) {
+                childViewPager2 = i
+                break
             }
-            return v as? ViewPager2
         }
-
-    private val childViewPager2: ViewPager2?
-        get() {
-            return if (childCount > 0) getChildAt(0) as ViewPager2 else null
-        }
-
-    init {
-        touchSlop = ViewConfiguration.get(context).scaledTouchSlop
-    }
-
-    private fun canChildScroll(orientation: Int, delta: Float): Boolean {
-        val direction = -delta.sign.toInt()
-        return when (orientation) {
-            0 -> childViewPager2?.canScrollHorizontally(direction) ?: false
-            1 -> childViewPager2?.canScrollVertically(direction) ?: false
-            else -> throw IllegalArgumentException()
+        childViewPager2 ?: kotlin.run {
+            throw Exception("子View没有ViewPager2")
         }
     }
 
-    private fun shouldInterceptTouchEvent(ev: MotionEvent?) {
-        val orientation = parentViewPager2?.orientation ?: return
-
-        if (!canChildScroll(orientation, -1f) && !canChildScroll(orientation, 1f)) {
-            return
-        }
-
-        ev?.let { e ->
-            if (e.action == MotionEvent.ACTION_DOWN) {
-                initialX = e.x
-                initialY = e.y
-                parent.requestDisallowInterceptTouchEvent(true)
-            } else if (e.action == MotionEvent.ACTION_MOVE) {
-                val dx = e.x - initialX
-                val dy = e.y - initialY
-
-                val isViewPager2Horizontal = orientation == ORIENTATION_HORIZONTAL
-
-                val scaledDx = dx.absoluteValue * if (isViewPager2Horizontal) .5f else 1f
-                val scaledDy = dy.absoluteValue * if (isViewPager2Horizontal) 1f else .5f
-
-                if (scaledDx > touchSlop || scaledDy > touchSlop) {
-                    if (isViewPager2Horizontal == (scaledDy > scaledDx)) {
-                        // Gesture is perpendicular, allow all parents to intercept
+    private fun shouldInterceptTouchEvent(e: MotionEvent?): Boolean {
+        e?.let {
+            childViewPager2?.let { vp2 ->
+                if (!vp2.isUserInputEnabled || (vp2.adapter != null && vp2.adapter?.itemCount!! <= 1)) {
+                    return super.onInterceptTouchEvent(e)
+                }
+                when (e.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        startX = e.x
+                        startY = e.y
                         parent.requestDisallowInterceptTouchEvent(false)
-                    } else {
-                        // Gesture is parallel, query child if movement in that direction is possible
-                        if (canChildScroll(orientation, if (isViewPager2Horizontal) dx else dy)) {
-                            // Child can scroll, disallow all parents to intercept
-                            parent.requestDisallowInterceptTouchEvent(true)
-                        } else {
-                            // Child cannot scroll, allow all parents to intercept
-                            parent.requestDisallowInterceptTouchEvent(false)
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val endX = e.x
+                        val distanceX = abs(e.x - startX)
+                        val distanceY = abs(e.y - startY)
+                        if (childViewPager2!!.orientation == ViewPager2.ORIENTATION_HORIZONTAL) {
+                            horizontalScroll(endX, distanceX, distanceY)
+                        }
+                    }
+                }
+            }
+        }
+        return super.onInterceptTouchEvent(e)
+    }
+
+    private fun horizontalScroll(endX: Float, disX: Float, disY: Float) {
+        childViewPager2!!.adapter?.let {
+            when{
+                disX > disY -> { //横向滑动
+                    when{
+                        endX > startX -> { //右滑
+                            if (childViewPager2!!.currentItem == 0){
+                                parent.requestDisallowInterceptTouchEvent(false)
+                            }else{
+                                parent.requestDisallowInterceptTouchEvent(true)
+                            }
+                        }
+                        endX < startX -> { //左滑
+                            if (childViewPager2!!.currentItem == it.itemCount-1){
+                                parent.requestDisallowInterceptTouchEvent(false)
+                            }else{
+                                parent.requestDisallowInterceptTouchEvent(true)
+                            }
                         }
                     }
                 }
@@ -87,7 +81,6 @@ class ViewPager2Container @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        shouldInterceptTouchEvent(ev)
-        return super.onInterceptTouchEvent(ev)
+        return shouldInterceptTouchEvent(ev)
     }
 }

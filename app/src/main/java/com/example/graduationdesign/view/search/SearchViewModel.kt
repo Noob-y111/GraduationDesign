@@ -1,12 +1,11 @@
 package com.example.graduationdesign.view.search
 
 import android.content.Context
-import android.os.Bundle
+import android.view.View
 import androidx.lifecycle.*
 import com.example.graduationdesign.model.InternetModel
-import com.example.graduationdesign.model.SearchType
 import com.example.graduationdesign.model.bean.search_bean.*
-import com.google.gson.Gson
+import com.example.graduationdesign.model.room.search.SearchHistory
 
 class SearchViewModel : ViewModel() {
 
@@ -31,6 +30,9 @@ class SearchViewModel : ViewModel() {
 
     private val _searchHotList = MutableLiveData<ArrayList<HotItem>>()
     val searchHotList: LiveData<ArrayList<HotItem>> = _searchHotList
+
+    private val _searchHistoryList = MutableLiveData<ArrayList<SearchHistory>>()
+    val searchHistoryList: LiveData<ArrayList<SearchHistory>> = _searchHistoryList
 
     private val _searchViewCompeteList = MutableLiveData<ArrayList<SingleSuggest>>()
     val searchViewCompeteList: LiveData<ArrayList<SingleSuggest>> = _searchViewCompeteList
@@ -96,13 +98,31 @@ class SearchViewModel : ViewModel() {
     private val _navigateBehavior = MutableLiveData<HashMap<String, Any>>()
     val navigateBehavior: LiveData<HashMap<String, Any>> = _navigateBehavior
 
+    private val _containerHide = MutableLiveData<Int>(View.GONE)
+    val containerHide: LiveData<Int> = _containerHide
+
     var navigateEnable = true
 
+    fun shouldHide(visibility: Int){
+        _containerHide.postValue(visibility)
+    }
+
     fun changeNavigateBehavior(keyword: String) {
+        model?.saveHistory(keyword)
         _navigateBehavior.postValue(HashMap<String, Any>().also {
             it["enable"] = navigateEnable
             it["keyword"] = keyword
         })
+    }
+
+    fun getHistoryList(){
+        model?.getHistory {
+            _searchHistoryList.postValue(it)
+        }
+    }
+
+    fun deleteHistory(){
+        model?.deleteHistory()
     }
 
 
@@ -117,7 +137,13 @@ class SearchViewModel : ViewModel() {
     val keyword: LiveData<String> = _keyword
 
     fun changeKeyword(keyword: String) {
-        _keyword.postValue(keyword)
+        if (_keyword.value == null){
+            _keyword.postValue(keyword)
+        }else{
+            if (_keyword.value != keyword){
+                _keyword.postValue(keyword)
+            }
+        }
     }
 
     private fun changeHideAble(boolean: Boolean) {

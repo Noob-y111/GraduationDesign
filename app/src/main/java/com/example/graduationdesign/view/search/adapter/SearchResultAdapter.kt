@@ -1,11 +1,12 @@
 package com.example.graduationdesign.view.search.adapter
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +15,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.graduationdesign.R
+import com.example.graduationdesign.model.ListType
 import com.example.graduationdesign.model.SearchType
+import com.example.graduationdesign.model.bean.new_album_bean.SingleMonthData
 import com.example.graduationdesign.model.bean.playlist_bean.Playlist
 import com.example.graduationdesign.model.bean.search_bean.CompleteAlbumBean
 import com.example.graduationdesign.model.bean.search_bean.CompleteArtistBean
@@ -22,6 +25,7 @@ import com.example.graduationdesign.model.bean.search_bean.VideoBean
 import com.example.graduationdesign.model.bean.song_list_bean.ArtistBean
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
 import com.example.graduationdesign.tools.TimeFormat
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import kotlinx.android.synthetic.main.layout_search_result_item_album.view.*
 import kotlinx.android.synthetic.main.layout_search_result_item_artist.view.*
 import kotlinx.android.synthetic.main.layout_search_result_item_playlist.view.*
@@ -32,7 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class SearchResultAdapter(private val type: Int) :
+class SearchResultAdapter(private val type: Int, private val viewModel: MainActivityViewModel) :
     ListAdapter<Any, RecyclerView.ViewHolder>(Compare) {
     class ArtistHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
     class SingleHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
@@ -90,14 +94,37 @@ class SearchResultAdapter(private val type: Int) :
 
                             }
                         }
-                )
+                ).also {
+                    it.itemView.setOnClickListener { _ ->
+                        viewModel.changeSongAndSongList(
+                            it.adapterPosition,
+                            ArrayList(currentList) as ArrayList<SongBean>
+                        )
+                    }
+                }
             }
 
             SearchType.ALBUM -> {
                 AlbumHolder(
                     LayoutInflater.from(parent.context)
                         .inflate(R.layout.layout_search_result_item_album, parent, false)
-                )
+                ).also {
+                    it.itemView.setOnClickListener { view ->
+                        val bundle = Bundle().apply {
+                            val item = currentList[it.adapterPosition] as CompleteAlbumBean
+                            val singleWeekData = SingleMonthData(
+                                id = item.id,
+                                name = item.name,
+                                artists = item.artist,
+                                imageUrl = item.picUrl as String
+                            )
+                            putParcelable("list_detail", singleWeekData)
+                            putInt("type", ListType.ALBUM_LIST)
+                        }
+                        view.findNavController()
+                            .navigate(R.id.action_searchFragment_to_reuseListFragment, bundle)
+                    }
+                }
             }
 
             SearchType.VIDEO -> {
@@ -111,7 +138,17 @@ class SearchResultAdapter(private val type: Int) :
                 PlaylistHolder(
                     LayoutInflater.from(parent.context)
                         .inflate(R.layout.layout_search_result_item_playlist, parent, false)
-                )
+                ).also {
+                    it.itemView.setOnClickListener { view ->
+                        val bundle = Bundle().apply {
+                            val item = currentList[it.adapterPosition] as Playlist
+                            putParcelable("list_detail", item)
+                            putInt("type", ListType.PLAYLIST_LIST)
+                        }
+                        view.findNavController()
+                            .navigate(R.id.action_searchFragment_to_reuseListFragment, bundle)
+                    }
+                }
             }
         }
     }

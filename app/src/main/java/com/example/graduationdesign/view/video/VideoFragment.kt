@@ -1,25 +1,16 @@
 package com.example.graduationdesign.view.video
 
-import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.*
 import android.widget.SeekBar
-import androidx.fragment.app.Fragment
-import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleObserver
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.graduationdesign.R
 import com.example.graduationdesign.base.BaseDialogFragment
 import com.example.graduationdesign.databinding.VideoFragmentBinding
-import com.example.graduationdesign.model.SearchType
-import com.example.graduationdesign.model.bean.mv.MvBean
 import com.example.graduationdesign.model.bean.mv.MvDetailInfo
 import com.example.graduationdesign.model.bean.song_list_bean.ArtistBean
 import com.example.graduationdesign.view.main.MainActivityViewModel
-import com.example.graduationdesign.view.search.adapter.SearchResultAdapter
 import com.example.graduationdesign.view.video.adapter.SimilarMvAdapter
 import com.example.imitationqqmusic.model.tools.ScreenUtils
 
@@ -141,6 +132,7 @@ class VideoFragment(private val vid: String) : BaseDialogFragment() {
         }
 
         binding.videoController.setOnClickListener {
+            viewModel.controllerShowTime = System.currentTimeMillis()
             viewModel.playerIsPlayOrPause()
         }
 
@@ -151,7 +143,15 @@ class VideoFragment(private val vid: String) : BaseDialogFragment() {
                     setScreenOnWhilePlaying(true)
                 }
             }
-            override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int ) {}
+
+            override fun surfaceChanged(
+                holder: SurfaceHolder?,
+                format: Int,
+                width: Int,
+                height: Int
+            ) {
+            }
+
             override fun surfaceDestroyed(holder: SurfaceHolder?) {}
         })
     }
@@ -178,17 +178,20 @@ class VideoFragment(private val vid: String) : BaseDialogFragment() {
         mainViewModel = MainActivityViewModel.newInstance(requireActivity())
         viewModel.setModel(mainViewModel.getDataModel())
 
-        viewModel.setResumeOrPauseService {
-            if (it){
-                mainViewModel.getBinder()?.playerPause()
-            }else{
-                mainViewModel.getBinder()?.playerPlay()
+        mainViewModel.getBinder()?.let {
+            viewModel.mediaPlayerIsPlaying = it.playerIsPlaying()
+
+            viewModel.setResumeOrPauseService { boolean ->
+                if (!viewModel.mediaPlayerIsPlaying) return@setResumeOrPauseService
+                if (boolean) it.playerPause()
+                else it.playerPlay()
             }
         }
 
         viewModel.addLifecycleObservable {
             lifecycle.addObserver(it)
         }
+
         translateStatusBarBlackBackground()
         initBehavior()
         initRecycler()

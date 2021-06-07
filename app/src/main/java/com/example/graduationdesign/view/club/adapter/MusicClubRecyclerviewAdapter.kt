@@ -22,6 +22,7 @@ class MusicClubRecyclerviewAdapter(private val callback: MusicClubRecyclerviewAd
 
     interface MusicClubRecyclerviewAdapterCallBack {
         fun initSubRecyclerViewCallBack(recyclerview: RecyclerView, position: Int)
+        fun setOnButtonClick(view: View)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -93,6 +94,9 @@ class MusicClubRecyclerviewAdapter(private val callback: MusicClubRecyclerviewAd
                                 holder.itemView.resources.getString(R.string.advice_title_new_song)
                             itemView.advice_button.text =
                                 holder.itemView.resources.getString(R.string.advice_button_play)
+                            itemView.advice_button.setOnClickListener {
+                                callback.setOnButtonClick(it)
+                            }
                             callback.initSubRecyclerViewCallBack(itemView.recycler_advice, position)
                         }
                     }

@@ -39,7 +39,11 @@ class ViewPagerBannerAdapter :
     }
 
     override fun getItemCount(): Int {
-        return if(currentList.size == 0 ) 0 else currentList.size + 2
+        return when(currentList.size){
+            0 -> 0
+            1 -> 1
+            else -> currentList.size + 2
+        }
     }
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {

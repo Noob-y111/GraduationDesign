@@ -33,4 +33,5 @@
     <color name="translate_black">#19111111</color>
     <color name="translate_66_white">#66ffffff</color>
     <color name="translate_88_white">#88ffffff</color>
+    <color name="red">#FF0000</color>
 </resources>

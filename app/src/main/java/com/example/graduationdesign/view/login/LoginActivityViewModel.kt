@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import com.example.graduationdesign.model.InternetModel
 import com.example.graduationdesign.model.bean.User
 import com.example.graduationdesign.tools.JudgeVolleyError
+import com.example.graduationdesign.tools.SharedPreferencesUtil
 import org.json.JSONObject
 import kotlin.concurrent.thread
 
@@ -15,13 +16,9 @@ class LoginActivityViewModel : ViewModel() {
     companion object {
         private var viewModel: LoginActivityViewModel? = null
         fun newInstance(lifecycleOwner: ViewModelStoreOwner): LoginActivityViewModel =
-            synchronized(this) {
-                return@synchronized if (viewModel != null) {
-                    viewModel!!
-                } else {
-                    viewModel =
-                        ViewModelProvider(lifecycleOwner).get(LoginActivityViewModel::class.java)
-                    viewModel!!
+            viewModel ?: synchronized(this) {
+                ViewModelProvider(lifecycleOwner).get(LoginActivityViewModel::class.java).also {
+                    viewModel = it
                 }
             }
     }
@@ -69,6 +66,7 @@ class LoginActivityViewModel : ViewModel() {
                 dealWithJson(it)
                 showDialog(false)
                 //todo 登陆成功
+                SharedPreferencesUtil.writeUidAndPassword(user, password)
             },
             {
                 val errorStr = JudgeVolleyError.judgeVolleyError(it)
@@ -85,6 +83,7 @@ class LoginActivityViewModel : ViewModel() {
             dealWithJson(it)
             showDialog(false)
             //todo 登陆成功
+            SharedPreferencesUtil.writeUidAndPassword("$email@163.com", password)
         }, {
             showMessage(JudgeVolleyError.judgeVolleyError(it))
             showDialog(false)

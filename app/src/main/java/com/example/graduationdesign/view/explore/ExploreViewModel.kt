@@ -1,8 +1,9 @@
 package com.example.graduationdesign.view.explore
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.*
+import com.example.graduationdesign.model.InternetModel
+import com.example.graduationdesign.model.bean.User
+import com.example.graduationdesign.model.bean.mv.VideoData
 
 class ExploreViewModel : ViewModel() {
     companion object {
@@ -19,6 +20,12 @@ class ExploreViewModel : ViewModel() {
             }
     }
 
+    private var model: InternetModel? = null
+
+    fun setModel(model: InternetModel?){
+        this.model = model
+    }
+
     private val mvType = ArrayList<String>().apply {
         add("内地")
         add("港台")
@@ -29,4 +36,20 @@ class ExploreViewModel : ViewModel() {
 
     fun getMvType(position: Int) = mvType[position]
     fun getMvTypeCount() = mvType.size
+
+    //more video
+    private val _videoList = MutableLiveData<ArrayList<VideoData>>()
+    val videoList: LiveData<ArrayList<VideoData>> = _videoList
+
+    fun getVideoList(user: User?){
+        user?.let { usr ->
+            model?.getVideoList(HashMap<String, String>().also {
+                it["cookie"] = usr.cookie!!
+            }, {
+                _videoList.postValue(it)
+            }, {
+
+            })
+        }
+    }
 }

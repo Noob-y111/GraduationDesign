@@ -31,6 +31,27 @@
             app:exitAnim="@anim/fragment_out"
             app:popEnterAnim="@anim/fragment_pop_in"
             app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_localFragment_to_settingFragment"
+            app:destination="@id/settingFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_localFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_localFragment_to_playHistoryFragment"
+            app:destination="@id/playHistoryFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
     </fragment>
 
     <fragment
@@ -90,6 +111,13 @@
         <action
             android:id="@+id/action_musicClubFragment_to_searchFragment"
             app:destination="@id/searchFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_musicClubFragment_to_settingFragment"
+            app:destination="@id/settingFragment"
             app:enterAnim="@anim/fragment_in"
             app:exitAnim="@anim/fragment_out"
             app:popEnterAnim="@anim/fragment_pop_in"
@@ -154,7 +182,15 @@
         android:id="@+id/searchFragment"
         android:name="com.example.graduationdesign.view.search.SearchFragment"
         android:label="search_fragment"
-        tools:layout="@layout/search_fragment" />
+        tools:layout="@layout/search_fragment" >
+        <action
+            android:id="@+id/action_searchFragment_to_reuseListFragment"
+            app:destination="@id/reuseListFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
+    </fragment>
     <fragment
         android:id="@+id/localMusicFragment"
         android:name="com.example.graduationdesign.view.local_music.LocalMusicFragment"
@@ -172,7 +208,30 @@
             app:exitAnim="@anim/fragment_out"
             app:popEnterAnim="@anim/fragment_pop_in"
             app:popExitAnim="@anim/fragment_pop_out" />
+        <action
+            android:id="@+id/action_userInfoFragment_to_changeUserFragment"
+            app:destination="@id/changeUserFragment"
+            app:enterAnim="@anim/fragment_in"
+            app:exitAnim="@anim/fragment_out"
+            app:popEnterAnim="@anim/fragment_pop_in"
+            app:popExitAnim="@anim/fragment_pop_out" />
     </fragment>
+
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.example.graduationdesign.view.setting.SettingFragment"
+        android:label="setting"
+        tools:layout="@layout/setting_fragment"/>
+    <fragment
+        android:id="@+id/playHistoryFragment"
+        android:name="com.example.graduationdesign.view.play_history.PlayHistoryFragment"
+        android:label="play_history_fragment"
+        tools:layout="@layout/play_history_fragment" />
+    <fragment
+        android:id="@+id/changeUserFragment"
+        android:name="com.example.graduationdesign.view.userinfo.ChangeUserFragment"
+        android:label="fragment_change_user"
+        tools:layout="@layout/fragment_change_user" />
 
 
 </navigation>

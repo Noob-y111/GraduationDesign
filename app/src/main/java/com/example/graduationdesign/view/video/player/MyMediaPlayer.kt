@@ -5,23 +5,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
-class MyMediaPlayer: MediaPlayer(), LifecycleObserver {
-
+class MyMediaPlayer : MediaPlayer(), LifecycleObserver {
     private var enable = false
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun mediaResume(){
+    fun mediaResume() {
         if (enable)
             start()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun mediaPause(){
+    fun mediaPause() {
         if (isPlaying)
             pause()
     }
 
-    fun setDataSource(path: String?, enable: Boolean){
+    fun setDataSource(path: String?, enable: Boolean) {
         setDataSource(path)
         this.enable = enable
     }
