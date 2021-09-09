@@ -15,7 +15,8 @@ import com.example.graduationdesign.model.ListType
 import com.example.graduationdesign.model.bean.playlist_bean.Playlist
 import kotlinx.android.synthetic.main.layout_song_image_item.view.*
 
-class UserInfoAdapter : ListAdapter<Playlist, RecyclerView.ViewHolder>(Compare) {
+class UserInfoAdapter(private val actionId: Int) :
+    ListAdapter<Playlist, RecyclerView.ViewHolder>(Compare) {
 
     object Compare : DiffUtil.ItemCallback<Playlist>() {
         override fun areItemsTheSame(oldItem: Playlist, newItem: Playlist): Boolean {
@@ -32,28 +33,28 @@ class UserInfoAdapter : ListAdapter<Playlist, RecyclerView.ViewHolder>(Compare) 
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == 0) {
-            return PlaylistHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.layout_song_image_item, parent, false)
-            ).also {
-                it.itemView.setOnClickListener { view ->
-                    val item = currentList[it.adapterPosition]
-                    val bundle = Bundle().also { bundle ->
-                        bundle.putParcelable("list_detail", item)
-                        bundle.putInt("type", ListType.PLAYLIST_LIST)
-                    }
-                    view.findNavController()
-                        .navigate(R.id.action_userInfoFragment_to_reuseListFragment, bundle)
+//        if (viewType == 0) {
+        return PlaylistHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.layout_song_image_item, parent, false)
+        ).also {
+            it.itemView.setOnClickListener { view ->
+                val item = currentList[it.adapterPosition]
+                val bundle = Bundle().also { bundle ->
+                    bundle.putParcelable("list_detail", item)
+                    bundle.putInt("type", ListType.PLAYLIST_LIST)
                 }
+                view.findNavController()
+                    .navigate(actionId, bundle)
             }
-        } else {
-            return BaseInfoHolder(LayoutInflater.from(parent.context).inflate(R.layout.song_text_item, parent, false))
         }
+//        } else {
+//            return BaseInfoHolder(LayoutInflater.from(parent.context).inflate(R.layout.song_text_item, parent, false))
+//        }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when(holder){
+        when (holder) {
             is PlaylistHolder -> {
                 val item = currentList[position]
                 holder.itemView.apply {
@@ -76,9 +77,9 @@ class UserInfoAdapter : ListAdapter<Playlist, RecyclerView.ViewHolder>(Compare) 
         }
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return if (position != currentList.size) 0 else 1
-    }
-
-    override fun getItemCount() = currentList.size + 1
+//    override fun getItemViewType(position: Int): Int {
+//        return if (position != currentList.size) 0 else 1
+//    }
+//
+//    override fun getItemCount() = currentList.size + 1
 }

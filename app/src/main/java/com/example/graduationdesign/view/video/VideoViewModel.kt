@@ -20,6 +20,7 @@ class VideoViewModel : ViewModel() {
     private var onVideoSizeChangedBlock: ((width: Int, height: Int) -> Unit)? = null
     private var resumeOrPauseService: ((playOrPause: Boolean) -> Unit)? = null
     private var playerHasResource = false
+    var mediaPlayerIsPlaying = false
 
     private val videoMediaPlayer = MyMediaPlayer().also { player ->
         player.setOnPreparedListener {
@@ -140,8 +141,7 @@ class VideoViewModel : ViewModel() {
         _shouldToolbarShow.postValue(visibility)
     }
 
-    private var controllerShowTime = 0L
-
+    var controllerShowTime = 0L
     fun surfaceClick() {
         _shouldToolbarShow.value?.let {
             if (it == View.INVISIBLE) {

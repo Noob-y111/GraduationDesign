@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Binder
@@ -17,17 +18,19 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.android.volley.VolleyError
+import com.bumptech.glide.Glide
 import com.example.graduationdesign.R
 import com.example.graduationdesign.callback.BaseBehaviorCallBack
 import com.example.graduationdesign.model.InternetModel
+import com.example.graduationdesign.model.bean.song_list_bean.ArtistBean
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.view.main.MainActivity
 import com.example.graduationdesign.view.reuse.adapter.ReuseListAdapter
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -40,8 +43,21 @@ class MyService : LifecycleService() {
 
     companion object {
         private const val CHANNEL_ID = "my player channel id"
+        private const val NEXT = "NEXT"
+        private const val LAST = "LAST"
+        private const val PLAY_PAUSE = "PLAY_PAUSE"
+        private const val NOTIFICATION_CLICK = "notification_click"
+        private const val BEHAVIOR = "behavior"
     }
 
+    private val intentNext = Intent(NEXT)
+    private val intentLast = Intent(LAST)
+    private val intentPlayPause = Intent(PLAY_PAUSE)
+    private val subScript = SubScript()
+
+    private lateinit var intentToMain: Intent
+
+    private var channel: NotificationChannel? = null
     private lateinit var mediaPlayer: MediaPlayer
     private val model = InternetModel(this)
     val currentSongListAndPosition = MutableLiveData<HashMap<String, Any>>()
@@ -51,9 +67,9 @@ class MyService : LifecycleService() {
     var progressBarBuffer = MutableLiveData<Int>(0)
     val stopOrResumeMediaPlayer = MutableLiveData<Boolean>()
     private var type = ReuseListAdapter.Type.NONE
+    private val receiver = MyReceiver()
 
-
-    private lateinit var remoteView: RemoteViews
+    private lateinit var playOrder: String
 
 
     private var mediaHasResource = false
@@ -82,14 +98,16 @@ class MyService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        executeForeground()
+        intentToMain = Intent(this, MainActivity::class.java)
+//        executeForeground()
+        playOrder = readOrder()
         mediaPlayer = MediaPlayer().also { media ->
             media.setOnCompletionListener {
                 cancelTimerTask()
                 it.reset()
                 mediaHasResource = false
                 updateMediaPlayerState()
-                next()
+                nextBehavior()
             }
 
             media.setOnPreparedListener {
@@ -109,7 +127,23 @@ class MyService : LifecycleService() {
                 progressBarBuffer.postValue((mp.duration * (percent.toFloat() / 100)).toInt())
             }
         }
+
+
+
         liveDataObserve()
+    }
+
+    private fun nextBehavior(){
+        when(playOrder){
+            SubScript.RANDOM_NEXT -> randomNext()
+            SubScript.LOOP_NEXT -> looping()
+            else -> next()
+        }
+    }
+
+    private fun readOrder(): String{
+        val sharedPreferences = getSharedPreferences("play_order", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(SubScript.PLAY_ORDER, SubScript.NORMAL_NEXT)!!
     }
 
     private fun getMediaPlayerCurrentPosition() = mediaPlayer.currentPosition
@@ -119,9 +153,163 @@ class MyService : LifecycleService() {
         progressBarDuration.postValue(getMediaPlayerDuration())
     }
 
+    private fun newNotification(song: SongBean, bitmap: Bitmap, playPause: Boolean): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_lemon)
+            .setContentTitle(resources.getString(R.string.app_name))
+            .setOngoing(true)
+            .setCustomContentView(newSmallRemoteViews(song, bitmap, playPause))
+            .setCustomBigContentView(newLargeRemoteViews(song, bitmap, playPause))
+            .build()
+    }
+
+    inner class MyReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.let {
+                println("================it.action: ${it.action}")
+                when (it.action) {
+                    NEXT -> next()
+                    LAST -> last()
+                    PLAY_PAUSE -> mediaPlayerPlayOrPause()
+                }
+            }
+        }
+    }
+
+    private fun concatArtists(list: ArrayList<ArtistBean>): String {
+        var artists = ""
+        list.forEach {
+            artists += it.name
+            if (list.lastIndex != list.indexOf(it)) {
+                artists += "/"
+            }
+        }
+        return artists
+    }
+
+    private fun newLargeRemoteViews(
+        song: SongBean,
+        bitmap: Bitmap,
+        playPause: Boolean
+    ): RemoteViews {
+        return RemoteViews(packageName, R.layout.layout_notification_large).also {
+            it.setTextViewText(R.id.tv_notification_name_large, song.name)
+            it.setImageViewBitmap(R.id.iv_notification_image_large, bitmap)
+            it.setTextViewText(R.id.tv_notification_artist_large, concatArtists(song.artists))
+
+            if (playPause) {
+                it.setImageViewResource(R.id.iv_notification_play_pause_large, R.drawable.play)
+            } else {
+                it.setImageViewResource(R.id.iv_notification_play_pause_large, R.drawable.pause)
+            }
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_next_large,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentNext,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_last_large,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentLast,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_play_pause_large,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentPlayPause,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_image_large,
+                PendingIntent.getActivity(this, 0, intentToMain, PendingIntent.FLAG_UPDATE_CURRENT)
+            )
+        }
+    }
+
+    private fun newSmallRemoteViews(
+        song: SongBean,
+        bitmap: Bitmap,
+        playPause: Boolean
+    ): RemoteViews {
+        return RemoteViews(packageName, R.layout.layout_notification_small).also {
+            it.setTextViewText(R.id.tv_notification_name, song.name)
+            it.setImageViewBitmap(R.id.iv_notification_image_small, bitmap)
+
+            if (playPause) {
+                it.setImageViewResource(R.id.iv_notification_play_pause_small, R.drawable.play)
+            } else {
+                it.setImageViewResource(R.id.iv_notification_play_pause_small, R.drawable.pause)
+            }
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_next_small,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentNext,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_image_small,
+                PendingIntent.getActivity(this, 0, intentToMain, PendingIntent.FLAG_UPDATE_CURRENT)
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_last_small,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentLast,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+
+            it.setOnClickPendingIntent(
+                R.id.iv_notification_play_pause_small,
+                PendingIntent.getBroadcast(
+                    this,
+                    0,
+                    intentPlayPause,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+        }
+    }
+
+    private fun sendNotification(song: SongBean, playPause: Boolean) {
+        createChannel()
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        thread {
+            try {
+                val bitmap: Bitmap = Glide.with(this).asBitmap().error(R.drawable.shimmer_bg).load(song.album.picUrl).submit().get()
+                MainScope().launch {
+                    notificationManager.notify(1, newNotification(song, bitmap, playPause))
+                }
+            }catch (e: Exception){
+
+            }
+        }
+    }
+
     private fun executeForeground() {
         createChannel()
-        remoteView = RemoteViews(packageName, R.layout.layout_notification_small).also {
+        val remoteView = RemoteViews(packageName, R.layout.layout_notification_small).also {
             it.setTextViewText(R.id.tv_notification_name, "我先试试行不行")
             it.setOnClickPendingIntent(
                 R.id.iv_notification_next_small,
@@ -133,16 +321,22 @@ class MyService : LifecycleService() {
                 )
             )
         }
-        startForeground(1, newNotification("我先试试"))
+//        startForeground(1, newNotification("我先试试"))
     }
 
     private fun createChannel() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
-            val name = "this is my player channel name"
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(CHANNEL_ID, name, importance)
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        if (channel == null) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+                val notificationManager =
+                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                if (notificationManager.notificationChannels.size != 0) {
+                    return
+                }
+                val name = "this is my player channel name"
+                val importance = NotificationManager.IMPORTANCE_HIGH
+                channel = NotificationChannel(CHANNEL_ID, name, importance)
+                notificationManager.createNotificationChannel(channel!!)
+            }
         }
     }
 
@@ -151,14 +345,14 @@ class MyService : LifecycleService() {
             canFooterShow.postValue(true)
             val position = it[POSITION] as Int
             val list = it[SONG_LIST] as ArrayList<*>
-            val song = list[position] as SongBean
-
+            val song: SongBean = list[position] as SongBean
             when (type) {
                 ReuseListAdapter.Type.LOCAL -> {
                     startLocalMusicById(song.id)
                 }
 
                 ReuseListAdapter.Type.INTERNET -> {
+                    model.savePlayHistory(song)
                     model.isTheMusicAvailable(song.id, object : BaseBehaviorCallBack {
                         override fun dealWithJSON(json: String) {
                             thread {
@@ -177,7 +371,17 @@ class MyService : LifecycleService() {
                         }
                     })
                 }
-                else -> {}
+                else -> {
+                }
+            }
+        })
+
+        stopOrResumeMediaPlayer.observe(this, { boolean ->
+            currentSongListAndPosition.value?.let {
+                val position = it[POSITION] as Int
+                val list = it[SONG_LIST] as ArrayList<*>
+                val song = list[position] as SongBean
+                sendNotification(song, boolean)
             }
         })
     }
@@ -198,7 +402,7 @@ class MyService : LifecycleService() {
             }
 
             override fun errorBehavior(error: VolleyError) {
-                TODO("Not yet implemented")
+
             }
         })
     }
@@ -210,10 +414,13 @@ class MyService : LifecycleService() {
         mediaPlayer.prepareAsync()
     }
 
-    private fun startLocalMusicById(id: String){
+    private fun startLocalMusicById(id: String) {
         cancelTimerTask()
         mediaPlayer.reset()
-        mediaPlayer.setDataSource(application, Uri.parse("content://media/external/audio/media/$id"))
+        mediaPlayer.setDataSource(
+            application,
+            Uri.parse("content://media/external/audio/media/$id")
+        )
         mediaPlayer.prepareAsync()
     }
 
@@ -221,12 +428,7 @@ class MyService : LifecycleService() {
         currentSongListAndPosition.value?.let {
             val position = it[POSITION] as Int
             val size = (it[SONG_LIST] as ArrayList<*>).size
-
-            if (position + 1 <= size - 1) {
-                changeIndex(position + 1)
-            } else {
-                changeIndex(0)
-            }
+            changeIndex(subScript.normalNext(position, size))
         }
     }
 
@@ -234,14 +436,26 @@ class MyService : LifecycleService() {
         currentSongListAndPosition.value?.let {
             val position = it[POSITION] as Int
             val size = (it[SONG_LIST] as ArrayList<*>).size
-
-            if (position - 1 >= 0) {
-                changeIndex(position - 1)
-            } else {
-                changeIndex(size - 1)
-            }
+            changeIndex(subScript.normalLast(position, size))
         }
     }
+
+    private fun looping(){
+        currentSongListAndPosition.value?.let {
+            val position = it[POSITION] as Int
+            currentSongListAndPosition.value?.set(POSITION, position)
+            currentSongListAndPosition.value = currentSongListAndPosition.value
+        }
+    }
+
+    private fun randomNext() {
+        currentSongListAndPosition.value?.let {
+//            val position = it[POSITION] as Int
+            val size = (it[SONG_LIST] as ArrayList<*>).size
+            changeIndex(subScript.randomNext(size))
+        }
+    }
+
 
     private fun changeIndex(position: Int) {
         currentSongListAndPosition.value?.let {
@@ -255,8 +469,11 @@ class MyService : LifecycleService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelTimerTask()
         mediaPlayer.release()
-        stopForeground(true)
+        unregisterReceiver(receiver)
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).cancelAll()
+        stopSelf()
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -284,49 +501,24 @@ class MyService : LifecycleService() {
         }
     }
 
+    private fun mRegisterReceiver() {
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(NEXT)
+        intentFilter.addAction(LAST)
+        intentFilter.addAction(PLAY_PAUSE)
+        registerReceiver(receiver, intentFilter)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        registerReceiver(MyReceiver(), IntentFilter("notification_click"))
+        mRegisterReceiver()
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun newNotification(text: String): Notification {
-        createChannel()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_lemon)
-            .setContentTitle(resources.getString(R.string.app_name))
-//            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(newRemoteViews(text))
-            .setCustomBigContentView(RemoteViews(packageName, R.layout.layout_notification_large))
-            .build()
-        return notification
-    }
-
-    private fun newRemoteViews(text: String): RemoteViews {
-
-        remoteView = RemoteViews(packageName, R.layout.layout_notification_small).also {
-            it.setTextViewText(R.id.tv_notification_name, text)
-            it.setOnClickPendingIntent(
-                R.id.iv_notification_next_small,
-                PendingIntent.getBroadcast(
-                    this,
-                    0,
-                    Intent("notification_click"),
-                    PendingIntent.FLAG_CANCEL_CURRENT
-                )
-            )
-        }
-
-        return remoteView
-    }
-
-
-    inner class MyReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            println("=======================有人在发送广播:")
-            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).notify(
-                100,
-                newNotification("这样子是可以的")
-            )
+    private fun savePlayOrder(order: String){
+        playOrder = order
+        getSharedPreferences("play_order", MODE_PRIVATE).edit().also {
+            it.putString(SubScript.PLAY_ORDER, order)
+            it.apply()
         }
     }
 
@@ -343,12 +535,28 @@ class MyService : LifecycleService() {
             currentSongListAndPosition.postValue(map)
         }
 
+        fun saveOrder(order: String){
+            savePlayOrder(order)
+        }
+
+        fun getOrder(): String{
+            return playOrder
+        }
+
         fun changePosition(position: Int) {
             changeIndex(position)
         }
 
         fun playOrPause() {
             mediaPlayerPlayOrPause()
+        }
+
+        fun playerIsPlaying(): Boolean{
+            return if (mediaHasResource){
+                mediaPlayer.isPlaying
+            }else{
+                false
+            }
         }
 
         fun playerPause() {

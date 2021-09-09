@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.graduationdesign.databinding.FragmentComprehensiveBinding
 import com.example.graduationdesign.model.SearchType
+import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.example.graduationdesign.view.search.SearchViewModel
 import com.example.graduationdesign.view.search.adapter.SearchResultAdapter
 
@@ -15,6 +16,7 @@ class ComprehensiveFragment() : Fragment() {
 
     private lateinit var binding: FragmentComprehensiveBinding
     private lateinit var viewModel: SearchViewModel
+    private lateinit var mainViewModel: MainActivityViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,11 +27,11 @@ class ComprehensiveFragment() : Fragment() {
     }
 
     private fun initRecyclerViews(){
-        val singleAdapter = SearchResultAdapter(SearchType.SINGLE)
-        val artistAdapter = SearchResultAdapter(SearchType.ARTIST)
-        val playlistAdapter = SearchResultAdapter(SearchType.PLAYLIST)
-        val albumAdapter = SearchResultAdapter(SearchType.ALBUM)
-        val videoAdapter = SearchResultAdapter(SearchType.VIDEO)
+        val singleAdapter = SearchResultAdapter(SearchType.SINGLE, mainViewModel)
+        val artistAdapter = SearchResultAdapter(SearchType.ARTIST, mainViewModel)
+        val playlistAdapter = SearchResultAdapter(SearchType.PLAYLIST, mainViewModel)
+        val albumAdapter = SearchResultAdapter(SearchType.ALBUM, mainViewModel)
+        val videoAdapter = SearchResultAdapter(SearchType.VIDEO, mainViewModel)
 
         binding.searchSingle.tvSearchTitle.text = "单曲"
         binding.searchSingle.searchResultRecycler.apply {
@@ -87,6 +89,7 @@ class ComprehensiveFragment() : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = SearchViewModel.newInstance(requireActivity())
+        mainViewModel = MainActivityViewModel.newInstance(requireActivity())
         initRecyclerViews()
     }
 

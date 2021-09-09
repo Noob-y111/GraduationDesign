@@ -1,6 +1,7 @@
 package com.example.graduationdesign.model
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
@@ -10,8 +11,11 @@ import com.example.graduationdesign.R
 import com.example.graduationdesign.callback.BaseBehaviorCallBack
 import com.example.graduationdesign.costume.StringPostRequest
 import com.example.graduationdesign.model.bean.*
+import com.example.graduationdesign.model.bean.club_bean.NewSongResponse
+import com.example.graduationdesign.model.bean.lrc.LrcResponse
+import com.example.graduationdesign.model.bean.lrc.StringLrc
 import com.example.graduationdesign.model.bean.mv.*
-import com.example.graduationdesign.model.bean.new_album_bean.SingleMonthData
+import com.example.graduationdesign.model.bean.mv.VideoData
 import com.example.graduationdesign.model.bean.new_album_bean.TheNewDiscShelvesBean
 import com.example.graduationdesign.model.bean.playlist_bean.ListSpecies
 import com.example.graduationdesign.model.bean.playlist_bean.PlayListHot
@@ -29,11 +33,16 @@ import com.example.graduationdesign.model.bean.song_list_bean.RecommendSongsBean
 import com.example.graduationdesign.model.bean.song_list_bean.SongBean
 import com.example.graduationdesign.model.bean.user_info.PlaylistResponse
 import com.example.graduationdesign.model.bean.user_info.UserDetailResponse
+import com.example.graduationdesign.model.room.search.SearchHistory
 import com.example.graduationdesign.tools.api.ApiTools
 import com.example.graduationdesign.tools.JudgeVolleyError
 import com.example.graduationdesign.tools.api.RetrofitApi
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.player_fragment.view.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
@@ -41,6 +50,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
@@ -52,6 +63,9 @@ class InternetModel constructor(private val context: Context) {
     private val retrofit = Retrofit.Builder().baseUrl(RetrofitApi.baseUrl)
         .addConverterFactory(GsonConverterFactory.create()).build()
     private val request = retrofit.create(RetrofitApi::class.java)
+
+    private val historyDao = AppDatabase.newInstance(context).historyDao()
+    private val songBeanDao = AppDatabase.newInstance(context).songBeanDao()
 
     private fun baseBehavior(
         parameter: HashMap<String, String>?,
@@ -212,6 +226,18 @@ class InternetModel constructor(private val context: Context) {
         })
     }
 
+    fun loginOut() {
+        baseBehavior(null, ApiTools.loginOut(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
     fun loginByEmail(
         map: HashMap<String, String>,
         block: (json: String) -> Unit,
@@ -245,6 +271,7 @@ class InternetModel constructor(private val context: Context) {
         })
 
     }
+
 
     fun getBannerList(
         success: (ArrayList<ImageOfBanner>) -> Unit,
@@ -281,6 +308,7 @@ class InternetModel constructor(private val context: Context) {
         val map = HashMap<String, String>()
         map["uid"] = uid
         map["cookie"] = cookies
+        map["timestamp"] = System.currentTimeMillis().toString()
         val call = request.recommendedPlaylistDaily(map)
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -310,48 +338,25 @@ class InternetModel constructor(private val context: Context) {
     }
 
     fun getRecommendNewSong(
-        success: ArrayList<ArrayList<ImageAndText>>.() -> Unit,
+        success: ArrayList<SongBean>.() -> Unit,
         errorHandling: (error: String?) -> Unit
     ) {
         val call = request.getRecommendNewSong()
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                thread {
-                    response.body()?.string()?.let {
-                        JSONObject(it).also { json ->
-                            when (val code = json.getInt("code")) {
-                                200 -> {
-                                    val result = json.getJSONArray("result")
-                                    val list = ArrayList<ArrayList<ImageAndText>>()
-                                    val threeList = ArrayList<ImageAndText>()
-                                    for (i in 0 until result.length()) {
-                                        val item = result.getJSONObject(i)
-                                        val id = item.getString("id")
-                                        val imageUrl = item.getString("picUrl")
-                                        val text = item.getString("name")
-                                        threeList.add(
-                                            ImageAndText(
-                                                imageUrl = imageUrl,
-                                                text = text,
-                                                id = id,
-                                                type = TypeOfMusicEnum.SONG
-                                            )
-                                        )
-                                        if ((i % 3 == 0) and (i != 0)) {
-                                            val subList = ArrayList<ImageAndText>().also { sub ->
-                                                sub.addAll(threeList)
-                                            }
-                                            threeList.clear()
-                                            list.add(subList)
-                                        }
-                                    }
-                                    success(list)
-                                }
 
-                                else -> {
-
+                response.body()?.string()?.let {
+                    Gson().fromJson(it, NewSongResponse::class.java).also { data ->
+                        if (data.code == 200) {
+                            val list = ArrayList<SongBean>()
+                            data.result.forEachIndexed { index, resultOfNewSong ->
+                                if (index < 9){
+                                    list.add(resultOfNewSong.song)
                                 }
                             }
+                            success(list)
+                        } else {
+                            errorHandling("错误类型：${data.code}")
                         }
                     }
                 }
@@ -472,6 +477,7 @@ class InternetModel constructor(private val context: Context) {
 
             override fun errorBehavior(error: VolleyError) {
                 println("================error.message: ${error.message}")
+                errorHandling(error.message)
             }
         })
 //        val call = request.getPlaylistByTag(map)
@@ -604,6 +610,24 @@ class InternetModel constructor(private val context: Context) {
     }
 
     //search
+    fun saveHistory(keyword: String) {
+        GlobalScope.launch {
+            historyDao.addHistory(SearchHistory( keyword))
+        }
+    }
+
+    fun getHistory(block: (list: ArrayList<SearchHistory>) -> Unit) {
+        GlobalScope.launch {
+            block(historyDao.getAllHistory() as ArrayList<SearchHistory>)
+        }
+    }
+
+    fun deleteHistory(){
+        GlobalScope.launch {
+            historyDao.deleteAll()
+        }
+    }
+
     fun getDefaultKeyWord(
         block: (data: Data) -> Unit,
         errorHandling: (error: VolleyError?) -> Unit
@@ -791,6 +815,26 @@ class InternetModel constructor(private val context: Context) {
         })
     }
 
+    fun getVideoList(
+        map: HashMap<String, String>,
+        block: (list: ArrayList<VideoData>) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.videoList(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, VideoListResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it.datas)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
     //local music
     private fun getAlbumImage(albumId: String): Any {
         val uri = "content://media/external/audio/albums"
@@ -805,7 +849,7 @@ class InternetModel constructor(private val context: Context) {
                 it.moveToNext()
                 val albumImage = it.getString(0)
                 it.close()
-                return albumImage ?: R.drawable.player_bg.toString()
+                return albumImage ?: R.drawable.player_bg
             }
         }
         albumCursor?.close()
@@ -879,6 +923,21 @@ class InternetModel constructor(private val context: Context) {
         })
     }
 
+    fun updateUser(map: HashMap<String, String>, block: () -> Unit, errorHandling: (error: String?) -> Unit){
+        baseBehavior(map, ApiTools.updateUser(), object : BaseBehaviorCallBack{
+            override fun dealWithJSON(json: String) {
+                if (JSONObject(json).getString("code") == "200"){
+                    block()
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                println("================error.networkResponse.data: ${String(error.networkResponse.data)}")
+                errorHandling(JSONObject(String(error.networkResponse.data)).getString("msg"))
+            }
+        })
+    }
+
     fun getUserPlaylistById(
         map: HashMap<String, String>,
         block: ArrayList<Playlist>.() -> Unit,
@@ -898,6 +957,109 @@ class InternetModel constructor(private val context: Context) {
             }
 
         })
+    }
+
+    fun updateAvatar(user: User, bitmap: Bitmap) {
+        try {
+            thread {
+                val path = context.filesDir.path + "images"
+                val file = File(path)
+                val output = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
+                output.flush()
+                output.close()
+
+                val body =
+                    file.asRequestBody("Content-Type': 'multipart/form-data".toMediaTypeOrNull())
+                val part = MultipartBody.Part.create(body)
+                val call = request.uploadAvatar(part, HashMap<String, String>().also { map ->
+                    map["timestamp"] = System.currentTimeMillis().toString()
+                    map["cookie"] = user.cookie!!
+                })
+                call.enqueue(object : Callback<ResponseBody> {
+                    override fun onResponse(
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
+                    ) {
+                        println(
+                            "================response.body()?.string(): ${
+                                response.body()?.string()
+                            }"
+                        )
+                    }
+
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        t.printStackTrace()
+                    }
+
+                })
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //play page
+    fun getLyric(
+        map: HashMap<String, String>,
+        block: (str: StringLrc?) -> Unit,
+        errorHandling: (error: VolleyError?) -> Unit
+    ) {
+        baseBehavior(map, ApiTools.getLyric(), object : BaseBehaviorCallBack {
+            override fun dealWithJSON(json: String) {
+                Gson().fromJson(json, LrcResponse::class.java).also {
+                    if (it.code == 200) {
+                        block(it.lrc)
+                    }
+                }
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+                errorHandling(error)
+            }
+        })
+    }
+
+    //play history
+    fun savePlayHistory(songBean: SongBean){
+        GlobalScope.launch {
+            songBeanDao.insert(songBean)
+        }
+    }
+
+    fun deletePlayHistory(songBean: SongBean){
+        GlobalScope.launch {
+            songBeanDao.delete(songBean)
+        }
+    }
+
+    fun getPlayHistory(block: (list: ArrayList<SongBean>) -> Unit){
+        GlobalScope.launch {
+            block(songBeanDao.queryList() as ArrayList<SongBean>)
+        }
+    }
+
+    fun deletePlayHistoryAll(){
+        GlobalScope.launch {
+            songBeanDao.deleteAll()
+        }
+    }
+
+    //list
+    fun addToList(map: HashMap<String, String>){
+        baseBehavior(map, ApiTools.addAndDeleteFromId() + "&op=add", object : BaseBehaviorCallBack{
+            override fun dealWithJSON(json: String) {
+                println("================json: $json")
+            }
+
+            override fun errorBehavior(error: VolleyError) {
+
+            }
+        })
+    }
+
+    fun deleteFromList(){
+
     }
 
 //    fun getRecommendDailySong(

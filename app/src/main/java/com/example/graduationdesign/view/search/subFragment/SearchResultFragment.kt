@@ -46,6 +46,9 @@ class SearchResultFragment : Fragment() {
             }
         }
 
+        binding.vp2SearchResult.isSaveEnabled = true
+        binding.vp2SearchResult.offscreenPageLimit = 3
+
         TabLayoutMediator(binding.tabSearchResult, binding.vp2SearchResult) { tab, position ->
             tab.text = when (position) {
                 0 -> "综合"

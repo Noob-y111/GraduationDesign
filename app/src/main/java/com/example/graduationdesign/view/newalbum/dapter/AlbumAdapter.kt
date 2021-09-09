@@ -58,7 +58,7 @@ class AlbumAdapter(private val screenWidth: Int) :
         if (viewType == NORMAL) {
             LayoutInflater.from(parent.context).inflate(R.layout.new_album_item, parent, false)
                 .also {
-                    return AlbumAdapter.Holder(it)
+                    return Holder(it)
                         .also { holder ->
                             holder.itemView.setOnClickListener { view ->
                                 val bundle = Bundle().apply {

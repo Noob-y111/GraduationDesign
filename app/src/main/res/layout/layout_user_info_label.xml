@@ -37,7 +37,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="@string/default_user_name"
         android:textColor="@color/light_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -63,15 +62,15 @@
             android:textColor="@color/white"
             android:padding="5dp" />
 
-        <TextView
-            android:id="@+id/btn_user_change_background"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/user_info_btn_selector"
-            android:text="@string/info_change_background"
-            android:layout_marginStart="10dp"
-            android:textColor="@color/white"
-            android:padding="5dp" />
+<!--        <TextView-->
+<!--            android:id="@+id/btn_user_change_background"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/user_info_btn_selector"-->
+<!--            android:text="@string/info_change_background"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:padding="5dp" />-->
 
     </LinearLayout>
 

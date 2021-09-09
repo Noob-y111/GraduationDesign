@@ -69,6 +69,8 @@ class ReuseListViewModel : ViewModel() {
         super.onCleared()
     }
 
+
+
     fun howToLoadData(bundle: Bundle) {
         when (bundle.getInt("type")) {
             ListType.PLAYLIST_LIST -> {

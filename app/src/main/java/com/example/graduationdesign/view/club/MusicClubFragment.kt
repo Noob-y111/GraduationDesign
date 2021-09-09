@@ -51,6 +51,8 @@ class MusicClubFragment : BaseFragment() {
         initOnClick()
     }
 
+    override fun toSetting() = R.id.action_musicClubFragment_to_settingFragment
+
     private fun navigate(action: Int) {
         Navigation.findNavController(requireActivity(), R.id.main_container)
             .navigate(action)
@@ -97,7 +99,7 @@ class MusicClubFragment : BaseFragment() {
                     when (position) {
                         0 -> {
                             initSubRecyclerView(recyclerview).adapter = adviceItemAdapter
-                            if (viewModel.adviceImageList.value == null)
+                            if (viewModel.playlist.value == null)
                                 viewModel.getRecommendPlaylist()
                         }
 
@@ -114,16 +116,19 @@ class MusicClubFragment : BaseFragment() {
                         }
                     }
                 }
+
+                override fun setOnButtonClick(view: View) {
+                    viewModel.changeSongAndSongList(0, ArrayList(adviceSongItemAdapter.currentList))
+                }
             })
         }
 
-        viewModel.adviceImageList.observe(viewLifecycleOwner, {
-            println("=======================submitlist:")
-            adviceItemAdapter.submitList(it)
+        viewModel.playlist.observe(viewLifecycleOwner, {
+            adviceItemAdapter.submitList(it as ArrayList<*>)
         })
 
         viewModel.adviceNewestAlbums.observe(viewLifecycleOwner, {
-            adviceItemAdapter2.submitList(it)
+            adviceItemAdapter2.submitList(it as ArrayList<*>)
         })
 
         viewModel.adviceNewSong.observe(viewLifecycleOwner, {
@@ -224,17 +229,20 @@ class MusicClubFragment : BaseFragment() {
 
     override fun onPause() {
         super.onPause()
+        viewModel.cancelTimer()
     }
 
     override fun onResume() {
         super.onResume()
+        viewModel.changeCurrentBannerIndex()
+        viewModel.initTimer()
     }
 
     override fun getTitle(): String {
         return getString(R.string.item_music)
     }
 
-    override fun getToolbarView(): Toolbar? {
+    override fun getToolbarView(): Toolbar {
         return binding.musicClubToolbar.toolbar
     }
 

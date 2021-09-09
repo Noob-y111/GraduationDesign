@@ -2,13 +2,14 @@ package com.example.graduationdesign.tools.api
 
 class ApiTools {
     companion object{
-        private const val baseUrl = "http://192.168.31.64:3000"
+        private const val baseUrl = "http://192.168.43.101:3000"
         fun cellphoneCheckUrl() = "$baseUrl/cellphone/existence/check?timestamp=${System.currentTimeMillis()}"
         fun getVerificationCode() = "$baseUrl/captcha/sent?timestamp=${System.currentTimeMillis()}"
         fun validationVerificationCode() = "$baseUrl/captcha/verify?timestamp=${System.currentTimeMillis()}"
         fun registeredByPhone() = "$baseUrl/register/cellphone?timestamp=${System.currentTimeMillis()}"
         fun loginByPhone() = "$baseUrl/login/cellphone?timestamp=${System.currentTimeMillis()}"
         fun loginByEmail() = "$baseUrl/login?timestamp=${System.currentTimeMillis()}"
+        fun loginOut() = "$baseUrl/logout?timestamp=${System.currentTimeMillis()}"
         fun getBanner() = "$baseUrl/banner?type=1&timestamp=${System.currentTimeMillis()}"
         fun userInformation() = "$baseUrl/user/subcount?timestamp=${System.currentTimeMillis()}"
         fun recommendedSongsDaily() = "$baseUrl/recommend/songs?timestamp=${System.currentTimeMillis()}"
@@ -32,11 +33,19 @@ class ApiTools {
         fun mvUrl() = "$baseUrl/mv/url?r=1080&timestamp=${System.currentTimeMillis()}"
         fun mvDetailInfo() = "$baseUrl/mv/detail?timestamp=${System.currentTimeMillis()}"
         fun similarMv() = "$baseUrl/simi/mv?timestamp=${System.currentTimeMillis()}"
+        fun videoList() = "$baseUrl/video/timeline/recommend?timestamp=${System.currentTimeMillis()}"
+        fun similarVideoList() = "$baseUrl/related/allvideo?timestamp=${System.currentTimeMillis()}"
 
         //user info
         fun userDetail() = "$baseUrl/user/detail?timestamp=${System.currentTimeMillis()}"
         fun userAccount() = "$baseUrl/user/account?timestamp=${System.currentTimeMillis()}"
         fun userPlaylist() = "$baseUrl/user/playlist?timestamp=${System.currentTimeMillis()}"
 
+        //play page
+        fun getLyric() = "$baseUrl/lyric?timestamp=${System.currentTimeMillis()}"
+
+        //list
+        fun addAndDeleteFromId() = "$baseUrl/playlist/tracks?timestamp=${System.currentTimeMillis()}"
+        fun updateUser() = "$baseUrl/user/update?timestamp=${System.currentTimeMillis()}"
     }
 }

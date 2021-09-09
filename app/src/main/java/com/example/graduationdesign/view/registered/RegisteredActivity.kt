@@ -1,5 +1,6 @@
 package com.example.graduationdesign.view.registered
 
+import android.content.Intent
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -55,12 +56,12 @@ class RegisteredActivity : BaseActivity() {
 
         viewModel.toastString.observe(this, Observer {
             ToastUtil.show(this, it)
-//            if (it == "注册成功"){
-//                setResult(0, Intent().apply {
-//                    putExtra("user", binding.registeredUserPhoneNumber.text.toString().trim())
-//                })
-//                finish()
-//            }
+            if (it == "注册成功"){
+                setResult(0, Intent().apply {
+                    putExtra("user", binding.registeredUserPhoneNumber.text.toString().trim())
+                })
+                finish()
+            }
         })
 
         //LiveData Observe
@@ -90,7 +91,7 @@ class RegisteredActivity : BaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.keep_in, R.anim.detail_dialog_exit)
+        overridePendingTransition(R.anim.fragment_pop_in, R.anim.fragment_pop_out)
     }
 
     override fun onDestroy() {

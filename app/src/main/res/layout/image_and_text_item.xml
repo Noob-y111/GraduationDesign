@@ -10,8 +10,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/image_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         app:cardCornerRadius="5dp"
         app:cardElevation="0dp">
 
@@ -21,7 +20,8 @@
             android:layout_height="100dp"
             android:scaleType="centerCrop"
             tools:srcCompat="@tools:sample/avatars"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            android:adjustViewBounds="true"/>
 
     </androidx.cardview.widget.CardView>
 

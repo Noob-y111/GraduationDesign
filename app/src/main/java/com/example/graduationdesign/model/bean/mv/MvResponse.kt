@@ -68,3 +68,39 @@ data class MvBean(
     @SerializedName("lastRank")
     var lastRank: Int?
 )
+
+data class VideoListResponse(
+    var code: Int,
+    @SerializedName("hasmore")
+    var hasMore: Boolean,
+    var datas: ArrayList<VideoData>
+)
+
+data class VideoData(
+    @SerializedName("data")
+    var video: VideoBean
+)
+
+data class VideoBean(
+    @SerializedName("vid", alternate = ["id"])
+    var vid: String,
+    @SerializedName("title", alternate = ["name"])
+    var title: String,
+    @SerializedName("coverUrl", alternate = ["cover"])
+    var coverUrl: String,
+    @SerializedName("playTime", alternate = ["playCount"])
+    var playTime: String,
+    @SerializedName("description")
+    var description: String,
+    @SerializedName("creator")
+    var creator: Creator?,
+    var durationms: Int
+)
+
+data class Creator(
+    var nickname: String,
+    var backgroundUrl: String?,
+    var avatarUrl: String?,
+    var province: String,
+    var city: String
+)

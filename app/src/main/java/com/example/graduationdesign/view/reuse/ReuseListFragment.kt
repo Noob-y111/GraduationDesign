@@ -16,6 +16,10 @@ import com.example.graduationdesign.base.AppBarStateChangedListener
 import com.example.graduationdesign.base.BlurBitmap
 import com.example.graduationdesign.databinding.ReuseListFragmentBinding
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
+import com.example.graduationdesign.model.bean.song_list_bean.SongBean
+import com.example.graduationdesign.tools.ToastUtil
+import com.example.graduationdesign.view.dialog.content.ContentMenuAdapter
+import com.example.graduationdesign.view.dialog.content.ContentMenuDialog
 import com.example.graduationdesign.view.main.MainActivityViewModel
 import com.example.graduationdesign.view.reuse.adapter.ReuseListAdapter
 import com.google.android.material.appbar.AppBarLayout
@@ -81,7 +85,12 @@ class ReuseListFragment : Fragment() {
     }
 
     private fun initView() {
-        val adapter = ReuseListAdapter(mainViewModel, ReuseListAdapter.Type.INTERNET)
+
+        val adapter = ReuseListAdapter(
+            mainViewModel,
+            ReuseListAdapter.Type.INTERNET,
+            null)
+
         binding.reuseRecyclerview.apply {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = adapter
@@ -109,6 +118,10 @@ class ReuseListFragment : Fragment() {
                     binding.reuseLabel.reuseImageTop.setImageBitmap(bitmap)
                 }
             }
+        })
+
+        mainViewModel.localPlaylist.observe(viewLifecycleOwner, {
+
         })
 
         viewModel.list.observe(viewLifecycleOwner, {

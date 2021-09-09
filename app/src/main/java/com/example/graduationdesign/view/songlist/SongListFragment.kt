@@ -76,6 +76,10 @@ class SongListFragment : BaseFragment() {
         initRecyclerView()
     }
 
+    override fun toSetting(): Int? {
+        return null
+    }
+
     override fun getTitle(): String {
         return ""
     }

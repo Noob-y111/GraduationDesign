@@ -62,6 +62,10 @@ class PlaylistFragment : BaseFragment() {
         }
     }
 
+    override fun toSetting(): Int? {
+        return null
+    }
+
     private fun initViewPagerAndTab(list: ArrayList<Tag>) {
         val viewpager2Adapter = object : FragmentStateAdapter(this){
             override fun getItemCount() = list.size

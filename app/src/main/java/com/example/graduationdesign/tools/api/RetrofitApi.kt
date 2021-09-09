@@ -8,13 +8,16 @@ import com.example.graduationdesign.model.bean.playlist_detail_bean.PlaylistDeta
 import com.example.graduationdesign.model.bean.ranking_list_bean.ListDetail
 import com.example.graduationdesign.model.bean.ranking_list_bean.TopListDetail
 import com.example.graduationdesign.model.bean.song_list_bean.RecommendSongsBean
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
 interface RetrofitApi {
     companion object{
-        const val baseUrl = "http://192.168.31.64:3000"
+        const val baseUrl = "http://192.168.43.101:3000"
     }
 
     @POST("/recommend/resource?")
@@ -51,4 +54,8 @@ interface RetrofitApi {
 
     @POST("/playlist/detail?")
     fun getTopListDetailById(@Body map: Map<String, String>): Call<PlaylistDetailById>
+
+    @Multipart
+    @POST("/avatar/upload?")
+    fun uploadAvatar(@Part file: MultipartBody.Part, @Part map: HashMap<String, String>): Call<ResponseBody>
 }

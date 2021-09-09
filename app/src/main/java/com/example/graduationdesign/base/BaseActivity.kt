@@ -39,8 +39,8 @@ abstract class BaseActivity : AppCompatActivity() {
         supportActionBar?.title = title
     }
 
-    abstract fun getToolBarId(): Int
-    abstract fun initView()
-    abstract fun setToolBarTitle(): String
-    abstract fun getContentView(): View
+    protected abstract fun getToolBarId(): Int
+    protected abstract fun initView()
+    protected abstract fun setToolBarTitle(): String
+    protected abstract fun getContentView(): View
 }

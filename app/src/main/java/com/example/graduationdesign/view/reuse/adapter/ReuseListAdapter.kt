@@ -15,7 +15,11 @@ import kotlinx.android.synthetic.main.layout_song_image_item.view.tv_song_artist
 import kotlinx.android.synthetic.main.layout_song_image_item.view.tv_song_name
 import kotlinx.android.synthetic.main.song_text_item.view.*
 
-class ReuseListAdapter(private val viewModel: MainActivityViewModel, private val type: Type) :
+class ReuseListAdapter(
+    private val viewModel: MainActivityViewModel,
+    private val type: Type,
+    private val longPressBehavior: LongPressListener?
+) :
     ListAdapter<SongBean, ReuseListAdapter.Holder>(Compare) {
 
     class Holder(itemView: View) : ViewHolder(itemView)
@@ -33,6 +37,10 @@ class ReuseListAdapter(private val viewModel: MainActivityViewModel, private val
 
     enum class Type {
         LOCAL, INTERNET, NONE
+    }
+
+    interface LongPressListener {
+        fun longPress(indexOfData: Int, list: ArrayList<SongBean>): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -55,6 +63,13 @@ class ReuseListAdapter(private val viewModel: MainActivityViewModel, private val
                                     holder.adapterPosition,
                                     ArrayList(currentList)
                                 )
+                            }
+
+                            holder.itemView.setOnLongClickListener {
+                                longPressBehavior?.let { listener ->
+                                    return@setOnLongClickListener listener.longPress(holder.adapterPosition, ArrayList(currentList))
+                                }
+                                return@setOnLongClickListener false
                             }
                         }
                         else -> {

@@ -24,7 +24,7 @@ data class Playlist(
     var name: String,
     @SerializedName("userId")
     var userId: String?,
-    @SerializedName("coverImgUrl")
+    @SerializedName("coverImgUrl", alternate = ["picUrl"])
     var imageUrl: String,
     @SerializedName("playCount")
     var playCount: String

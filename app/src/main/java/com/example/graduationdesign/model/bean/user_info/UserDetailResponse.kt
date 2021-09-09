@@ -13,5 +13,8 @@ data class Profile(
     var backgroundUrl: String,
     var avatarUrl: String,
     var province: String,
-    var city: String
+    var city: String,
+    var gender: Int,
+    var signature: String?,
+    var birthday: String
 )
